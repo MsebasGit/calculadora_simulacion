@@ -1,23 +1,23 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards #-}
+
 module Main where
 
 import Miso
-import Language.Javascript.JSaddle.Warp as JSaddle
-import Types
+
+-- Importamos nuestros módulos locales
+import Types   
 import Update
 import View
 
 main :: IO ()
-main = do
-  putStrLn "Starting Miso application on http://localhost:3000..."
-  JSaddle.run 3000 $ startApp App
-    { model         = initialModel
-    , update        = updateModel
-    , view          = viewModel
-    , events        = defaultEvents
-    , subs          = []
-    , initialAction = NoOp
-    , mountPoint    = Nothing
-    , logLevel      = Off
-    }
+#ifdef WASM
+main = startApp defaultEvents app
+
+foreign export javascript "hs_start" main :: IO ()
+#else
+main = putStrLn "Para ejecutar la calculadora de simulación en el navegador, compila a WebAssembly usando: cabal build --target=wasm32-wasi"
+#endif
+
+app :: App Model Action
+app = vcomp modeloInicial updateModel viewModel

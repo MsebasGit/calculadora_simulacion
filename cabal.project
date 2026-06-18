@@ -1,4 +1,1 @@
 packages: .
-
-package miso
-  flags: +jsaddle

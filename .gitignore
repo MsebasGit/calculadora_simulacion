@@ -1,0 +1,14 @@
+# Haskell Cabal build directory
+dist-newstyle/
+
+# Local environment / config files
+cabal.project.local
+cabal.project.local~
+.ghc.environment.*
+
+# Optional: GHC WASM build scripts and tools
+.ghc-wasm/
+
+# Compiled WASM build artifacts in public/
+public/calculadora-simulacion.wasm
+public/calculadora-simulacion.js
