@@ -5,15 +5,14 @@ module Main where
 
 import Miso
 
--- Importamos nuestros módulos locales
-import Types   
-import Update
-import View
+-- Importamos nuestros módulos locales globales
+import GlobalTypes
+import GlobalUpdate
+import GlobalView
 
 main :: IO ()
 #ifdef WASM
 main = startApp defaultEvents app
-
 foreign export javascript "hs_start" main :: IO ()
 #else
 main = putStrLn "Para ejecutar la calculadora de simulación en el navegador, compila a WebAssembly usando: cabal build --target=wasm32-wasi"
