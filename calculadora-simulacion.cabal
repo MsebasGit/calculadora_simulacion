@@ -66,8 +66,13 @@ executable calculadora-simulacion
     other-modules: Funciones.Aleatorios,
                    Funciones.Estadisticas,
                    Automatas.CuadradosMedios,
+                   Automatas.MultiplicadorConstante,
                    Automatas.Congruencial,
                    Automatas.PruebasEstadisticas,
+                   Automatas.ProductosMedios,
+                   SubAutomatas.InputValidado,
+                   UI.Navbar,
+                   UI.Math,
                    GlobalTypes,
                    GlobalUpdate,
                    GlobalView
@@ -80,7 +85,9 @@ executable calculadora-simulacion
                       miso,
                       text,
                       mtl,
-                      vector
+                      vector,
+                      containers,
+                      statistics
 
     -- Directories containing source files.
     hs-source-dirs:   app

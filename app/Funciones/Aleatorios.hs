@@ -1,9 +1,9 @@
 module Funciones.Aleatorios
   ( congruencialLineal
-  , centro
   , cuadradosMedios
   , productosMedios
   , multiplicadorConstante
+  , pseudoaleatorioNC
   ) where
 
 -- | Generador Congruencial Lineal
@@ -26,3 +26,6 @@ productosMedios (x0, x1) = (x1, centro (x0 * x1))
 multiplicadorConstante :: Int -> Int -> Int
 multiplicadorConstante c x0 = centro $ x0 * c
 
+-- | Generar pseudoaleatorio de 4 decimales entre 0 y 1 (No congruencial)
+pseudoaleatorioNC :: Int -> Float
+pseudoaleatorioNC n = fromIntegral n / 10000 
