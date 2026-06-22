@@ -9,6 +9,10 @@ module UI.Math
   , constc    -- ^ c
   , consta    -- ^ a
   , constm    -- ^ m
+  , formulaCuadradosMedios
+  , formulaProductosMedios
+  , formulaMultiplicadorConstante
+  , formulaCongruencial
   ) where
 
 import Miso
@@ -94,4 +98,104 @@ constm :: View model action
 constm =
   M.math_ [] [
     M.mi_ [] [text "m"]
+  ]
+
+-- | Fórmula: X_{n+1} = X_n^2
+formulaCuadradosMedios :: View model action
+formulaCuadradosMedios =
+  M.math_ [] [
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "n"],
+        M.mo_ [] [text "+"],
+        M.mn_ [] [text "1"]
+      ]
+    ],
+    M.mo_ [] [text "="],
+    M.msup_ [] [
+      M.msub_ [] [
+        M.mi_ [] [text "X"],
+        M.mi_ [] [text "n"]
+      ],
+      M.mn_ [] [text "2"]
+    ]
+  ]
+
+-- | Fórmula: X_{n+2} = X_n * X_{n+1}
+formulaProductosMedios :: View model action
+formulaProductosMedios =
+  M.math_ [] [
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "n"],
+        M.mo_ [] [text "+"],
+        M.mn_ [] [text "2"]
+      ]
+    ],
+    M.mo_ [] [text "="],
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mi_ [] [text "n"]
+    ],
+    M.mo_ [] [text "·"],
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "n"],
+        M.mo_ [] [text "+"],
+        M.mn_ [] [text "1"]
+      ]
+    ]
+  ]
+
+-- | Fórmula: X_{n+1} = c * X_n
+formulaMultiplicadorConstante :: View model action
+formulaMultiplicadorConstante =
+  M.math_ [] [
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "n"],
+        M.mo_ [] [text "+"],
+        M.mn_ [] [text "1"]
+      ]
+    ],
+    M.mo_ [] [text "="],
+    M.mi_ [] [text "c"],
+    M.mo_ [] [text "·"],
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mi_ [] [text "n"]
+    ]
+  ]
+
+-- | Fórmula: X_{n+1} = (a * X_n + c) mod m
+formulaCongruencial :: View model action
+formulaCongruencial =
+  M.math_ [] [
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "n"],
+        M.mo_ [] [text "+"],
+        M.mn_ [] [text "1"]
+      ]
+    ],
+    M.mo_ [] [text "="],
+    M.mrow_ [] [
+      M.mo_ [] [text "("],
+      M.mi_ [] [text "a"],
+      M.mo_ [] [text "·"],
+      M.msub_ [] [
+        M.mi_ [] [text "X"],
+        M.mi_ [] [text "n"]
+      ],
+      M.mo_ [] [text "+"],
+      M.mi_ [] [text "c"],
+      M.mo_ [] [text ")"],
+      M.mo_ [] [text "mod"],
+      M.mi_ [] [text "m"]
+    ]
   ]

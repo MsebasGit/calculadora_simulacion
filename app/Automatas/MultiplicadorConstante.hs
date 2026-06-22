@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Automatas.MultiplicadorConstante  
   ( MultConstanteModel (..)
@@ -13,10 +14,12 @@ module Automatas.MultiplicadorConstante
   , inputConstante
   , parametrosOriginales
   , historial
+  , c
+  , paginaActual
   ) where
 
 import Miso
-import Miso.Lens
+import Control.Lens
 import qualified Funciones.Aleatorios as F
 import qualified Miso.Html as H
 
@@ -27,6 +30,7 @@ import Text.Read (readMaybe)
 import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import qualified UI.Math as UM
+import qualified UI.Table as UT
 
 
 -- | Modelo local para el método de Multiplicador Constante
@@ -38,7 +42,10 @@ data MultConstanteModel = MultConstanteModel
   , _xn                   :: Int
   , _c                    :: Int 
   , _historial            :: [Int]
+  , _paginaActual         :: Int
   } deriving (Show, Eq)
+
+makeLenses ''MultConstanteModel
 
 -- | Acciones locales para el método de Multiplicador Constante
 data MultConstanteAction 
@@ -50,33 +57,16 @@ data MultConstanteAction
   | IterarNUsuario
   | IterarN Int
   | Reiniciar
+  | PaginaAnterior
+  | PaginaSiguiente
   deriving (Show, Eq)
-
--- | Lentes para manipular el modelo local
-xn :: Lens MultConstanteModel Int
-xn = lens _xn $ \record x -> record {_xn = x}
-
-inputSemilla :: Lens MultConstanteModel InputValidado
-inputSemilla = lens _inputSemilla $ \record x -> record {_inputSemilla = x}
-
-inputIteraciones :: Lens MultConstanteModel InputValidado
-inputIteraciones = lens _inputIteraciones $ \record x -> record {_inputIteraciones = x}
-
-inputConstante :: Lens MultConstanteModel InputValidado
-inputConstante = lens _inputConstante $ \record x -> record {_inputConstante = x}
-
-parametrosOriginales :: Lens MultConstanteModel (Maybe (Int, Int))
-parametrosOriginales = lens _parametrosOriginales $ \record x -> record {_parametrosOriginales = x}
-
-historial :: Lens MultConstanteModel [Int]
-historial = lens _historial $ \record x -> record {_historial = x}
 
 -- | Estado inicial
 xcero :: MultConstanteModel
 xcero = MultConstanteModel (InputValidado "" Nothing)
                            (InputValidado "10" Nothing)
                            (InputValidado "" Nothing)
-                           Nothing 0 0 [] 
+                           Nothing 0 0 [] 1 
 
 
 -- | Actualización de estado local (pure update)
@@ -131,6 +121,7 @@ updateModel action modelo = case action of
       , _xn = 0
       , _c = 0
       , _historial = []
+      , _paginaActual = 1
       }
 
   IterarNUsuario ->
@@ -143,6 +134,7 @@ updateModel action modelo = case action of
                    modeloConHistorial = modelo
                      { _xn        = if null nuevosValores then semillaActual else last nuevosValores
                      , _historial = reverse nuevosValores ++ _historial modelo
+                     , _paginaActual = 1
                      }
                in inputIteraciones %~ (errorActual .~ Nothing) $ modeloConHistorial
            | otherwise ->
@@ -157,6 +149,7 @@ updateModel action modelo = case action of
        else modelo
          { _xn        = if null nuevosValores then semillaActual else last nuevosValores
          , _historial = reverse nuevosValores ++ _historial modelo
+         , _paginaActual = 1
          }
 
   Iterar ->
@@ -165,12 +158,29 @@ updateModel action modelo = case action of
     in modelo
       { _xn        = nuevoValor
       , _historial = nuevoValor : _historial modelo
+      , _paginaActual = 1
       }
+
+  PaginaAnterior ->
+    if _paginaActual modelo > 1
+      then modelo { _paginaActual = _paginaActual modelo - 1 }
+      else modelo
+
+  PaginaSiguiente ->
+    let totalElementos = length (_historial modelo)
+        maxPagina = UT.calcularMaxPagina totalElementos
+    in if _paginaActual modelo < maxPagina
+         then modelo { _paginaActual = _paginaActual modelo + 1 }
+         else modelo
+
 
 
 viewModel :: MultConstanteModel -> View model MultConstanteAction
-viewModel modelo = H.div_ [ ]
-  [ H.h2_ [] [ text "Generador: Multiplicador Constante" ]
+viewModel modelo = H.div_ []
+  [ H.h2_ [] 
+      [ text "Generador: Multiplicador Constante "
+      , H.span_ [ class_ "formula-title" ] [ UM.formulaMultiplicadorConstante ]
+      ]
   
   -- Mostramos el estado actual del generador
   , H.div_ [ ] 
@@ -193,7 +203,9 @@ viewModel modelo = H.div_ [ ]
   -- Separamos los controles y la tabla en funciones más pequeñas
   , panelControles modelo
   , H.hr_ []
-  , tablaHistorial (_historial modelo)
+  , case _parametrosOriginales modelo of
+      Nothing -> H.div_ [] []
+      Just _  -> tablaHistorial (_paginaActual modelo) (_historial modelo)
   ]
 
 ---
@@ -243,32 +255,20 @@ controlesSimulacion False modelo = H.div_ []
   , H.button_ [ onClick Reiniciar ] [ text "Reiniciar / Cambiar parámetros" ]
   ]
 
-tablaHistorial :: [Int] -> View model MultConstanteAction
-tablaHistorial historialList = 
-  H.table_ []
-    [ H.thead_ []
-      [ H.tr_ []
-        [ H.th_ [] [ UM.indexn ]
-        , H.th_ [] [ UM.xn ]
-        , H.th_ [] [ UM.rn ]
-        ]
-      ]
-    , H.tbody_ [] filasHTML
-    ]
-  where
-    listaValores = reverse historialList
-    listaPseudo  = map F.pseudoaleatorioNC listaValores
-    
-    listaNumerada = zip3 [1..] listaValores listaPseudo :: [(Int, Int, Float)]
-    
-    filasHTML = [ H.tr_ [] 
-                    [ H.td_ [  ] 
-                        [ text (ms (show iteracion)) ]
-                    , H.td_ [  ] 
-                        [ text (ms (show valor)) ] 
-                    , H.td_ [  ] 
-                        [ text (ms (show pseudo)) ] 
-                    ] 
-                | (iteracion, valor, pseudo) <- listaNumerada 
-                ]                
+tablaHistorial :: Int -> [Int] -> View model MultConstanteAction
+tablaHistorial pagAct historialList =
+  UT.tablaPaginada
+    [ UM.indexn, UM.xn, UM.rn ]
+    historialList
+    pagAct
+    (\idx valor ->
+       [ text (ms (show idx))
+       , text (ms (show valor))
+       , text (ms (show (F.pseudoaleatorioNC valor)))
+       ]
+    )
+    PaginaAnterior
+    PaginaSiguiente
+
+
 

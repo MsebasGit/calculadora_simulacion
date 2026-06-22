@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Automatas.CuadradosMedios
   ( CuadradosMediosModel (..)
@@ -12,10 +13,11 @@ module Automatas.CuadradosMedios
   , inputIteraciones
   , semillaOriginal
   , historial
+  , paginaActual
   ) where
 
 import Miso
-import Miso.Lens
+import Control.Lens
 import qualified Funciones.Aleatorios as F
 import qualified Miso.Html as H
 import Miso.Html.Event (onClick)
@@ -25,6 +27,7 @@ import Text.Read (readMaybe)
 import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import qualified UI.Math as UM
+import qualified UI.Table as UT
 
 
 -- | Modelo local para el método de Cuadrados Medios
@@ -34,7 +37,10 @@ data CuadradosMediosModel = CuadradosMediosModel
   , _semillaOriginal   :: Maybe Int
   , _xn                :: Int
   , _historial         :: [Int]
+  , _paginaActual      :: Int
   } deriving (Show, Eq)
+
+makeLenses ''CuadradosMediosModel
 
 -- | Acciones locales para el método de Cuadrados Medios
 data CuadradosMediosAction 
@@ -45,27 +51,13 @@ data CuadradosMediosAction
   | IterarNUsuario
   | IterarN Int
   | Reiniciar
+  | PaginaAnterior
+  | PaginaSiguiente
   deriving (Show, Eq)
-
--- | Lentes para manipular el modelo local
-xn :: Lens CuadradosMediosModel Int
-xn = lens _xn $ \record x -> record {_xn = x}
-
-inputSemilla :: Lens CuadradosMediosModel InputValidado
-inputSemilla = lens _inputSemilla $ \record x -> record {_inputSemilla = x}
-
-inputIteraciones :: Lens CuadradosMediosModel InputValidado
-inputIteraciones = lens _inputIteraciones $ \record x -> record {_inputIteraciones = x}
-
-semillaOriginal :: Lens CuadradosMediosModel (Maybe Int)
-semillaOriginal = lens _semillaOriginal $ \record x -> record {_semillaOriginal = x}
-
-historial :: Lens CuadradosMediosModel [Int]
-historial = lens _historial $ \record x -> record {_historial = x}
 
 -- | Estado inicial
 xcero :: CuadradosMediosModel
-xcero = CuadradosMediosModel (InputValidado "" Nothing) (InputValidado "10" Nothing) Nothing 0 [] 
+xcero = CuadradosMediosModel (InputValidado "" Nothing) (InputValidado "10" Nothing) Nothing 0 [] 1 
 
 -- | Actualización de estado local (pure update)
 updateModel :: CuadradosMediosAction -> CuadradosMediosModel -> CuadradosMediosModel
@@ -94,7 +86,7 @@ updateModel action modelo = case action of
   Reiniciar ->
     case _semillaOriginal modelo of
       Nothing -> modelo
-      Just s  -> modelo { _semillaOriginal = Nothing, _xn = s, _historial = [] }
+      Just s  -> modelo { _semillaOriginal = Nothing, _xn = s, _historial = [], _paginaActual = 1 }
 
   IterarNUsuario ->
     let str = fromMisoString (_textoTemporal (_inputIteraciones modelo))
@@ -106,6 +98,7 @@ updateModel action modelo = case action of
                    modeloConHistorial = modelo
                      { _xn        = if null nuevosValores then semillaActual else last nuevosValores
                      , _historial = reverse nuevosValores ++ _historial modelo
+                     , _paginaActual = 1
                      }
                in inputIteraciones %~ (errorActual .~ Nothing) $ modeloConHistorial
            | otherwise ->
@@ -120,6 +113,7 @@ updateModel action modelo = case action of
        else modelo
          { _xn        = if null nuevosValores then semillaActual else last nuevosValores
          , _historial = reverse nuevosValores ++ _historial modelo
+         , _paginaActual = 1
          }
 
   Iterar ->
@@ -128,12 +122,29 @@ updateModel action modelo = case action of
     in modelo
       { _xn        = nuevoValor
       , _historial = nuevoValor : _historial modelo
+      , _paginaActual = 1
       }
+
+  PaginaAnterior ->
+    if _paginaActual modelo > 1
+      then modelo { _paginaActual = _paginaActual modelo - 1 }
+      else modelo
+
+  PaginaSiguiente ->
+    let totalElementos = length (_historial modelo)
+        maxPagina = UT.calcularMaxPagina totalElementos
+    in if _paginaActual modelo < maxPagina
+         then modelo { _paginaActual = _paginaActual modelo + 1 }
+         else modelo
+
 
 
 viewModel :: CuadradosMediosModel -> View model CuadradosMediosAction
-viewModel modelo = H.div_ [ ]
-  [ H.h2_ [] [ text "Generador: Cuadrados Medios" ]
+viewModel modelo = H.div_ []
+  [ H.h2_ [] 
+      [ text "Generador: Cuadrados Medios "
+      , H.span_ [ class_ "formula-title" ] [ UM.formulaCuadradosMedios ]
+      ]
   
   -- Mostramos el estado actual del generador
   , H.div_ [] 
@@ -150,7 +161,9 @@ viewModel modelo = H.div_ [ ]
   -- Separamos los controles y la tabla en funciones más pequeñas
   , panelControles modelo
   , H.hr_ []
-  , tablaHistorial (_historial modelo)
+  , case _semillaOriginal modelo of
+      Nothing -> H.div_ [] []
+      Just _  -> tablaHistorial (_paginaActual modelo) (_historial modelo)
   ]
 
 ---
@@ -207,35 +220,20 @@ controlesSimulacion False modelo = H.div_ []
   , H.button_ [ onClick Reiniciar ] [ text "Reiniciar" ]
   ]
 
-tablaHistorial :: [Int] -> View model CuadradosMediosAction
-tablaHistorial historialList = 
-  H.table_ []
-    [ H.thead_ []
-      [ H.tr_ []
-        [ H.th_ [] [ UM.indexn ]
-        , H.th_ [] [ UM.xn ]
-        , H.th_ [] [ UM.rn ]
-        ]
-      ]
-    , H.tbody_ [] filasHTML
-    ]
-  where
-    -- 1. Revertimos la lista para que se muestre en orden original
-    listaValores = reverse historialList
-    listaPseudo  = map F.pseudoaleatorioNC listaValores
-        
-    -- 2. Numeramos los elementos (ej. [(1, 5731), (2, 8443), ...])
-    listaNumerada = zip3 [1..] listaValores listaPseudo :: [(Int, Int, Float)]
+tablaHistorial :: Int -> [Int] -> View model CuadradosMediosAction
+tablaHistorial pagAct historialList =
+  UT.tablaPaginada
+    [ UM.indexn, UM.xn, UM.rn ]
+    historialList
+    pagAct
+    (\idx valor ->
+       [ text (ms (show idx))
+       , text (ms (show valor))
+       , text (ms (show (F.pseudoaleatorioNC valor)))
+       ]
+    )
+    PaginaAnterior
+    PaginaSiguiente
 
-    -- 3. Mapeamos cada par a una fila de tabla <tr> usando "List Comprehension"
-    filasHTML = [ H.tr_ [] 
-                    [ H.td_ [  ] 
-                        [ text (ms (show iteracion)) ]
-                    , H.td_ [  ] 
-                        [ text (ms (show valor)) ] 
-                    , H.td_ [  ] 
-                        [ text (ms (show pseudo)) ] 
-                    ] 
-                | (iteracion, valor, pseudo) <- listaNumerada 
-                ]                
+
 

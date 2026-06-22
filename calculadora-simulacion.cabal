@@ -73,6 +73,7 @@ executable calculadora-simulacion
                    SubAutomatas.InputValidado,
                    UI.Navbar,
                    UI.Math,
+                   UI.Table,
                    GlobalTypes,
                    GlobalUpdate,
                    GlobalView
@@ -87,7 +88,8 @@ executable calculadora-simulacion
                       mtl,
                       vector,
                       containers,
-                      statistics
+                      statistics,
+                      lens
 
     -- Directories containing source files.
     hs-source-dirs:   app

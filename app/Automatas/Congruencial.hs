@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Automatas.Congruencial
   ( CongruencialModel (..)
@@ -18,7 +19,7 @@ module Automatas.Congruencial
   ) where
 
 import Miso
-import Miso.Lens
+import Control.Lens
 import qualified Data.Vector as V
 import qualified Funciones.Aleatorios as F
 import qualified Miso.Html as H
@@ -46,6 +47,8 @@ data CongruencialModel = CongruencialModel
   , _historial            :: V.Vector Int
   } deriving (Show, Eq)
 
+makeLenses ''CongruencialModel
+
 -- | Acciones locales para el método Congruencial Lineal
 data CongruencialAction
   = AccionInputSemilla InputValidadoAction
@@ -59,31 +62,6 @@ data CongruencialAction
   | IterarN Int
   | Reiniciar
   deriving (Show, Eq)
-
--- | Lentes para manipular el modelo local
-xn :: Lens CongruencialModel Int
-xn = lens _xn $ \record x -> record {_xn = x}
-
-inputSemilla :: Lens CongruencialModel InputValidado
-inputSemilla = lens _inputSemilla $ \record x -> record {_inputSemilla = x}
-
-inputMultiplicador :: Lens CongruencialModel InputValidado
-inputMultiplicador = lens _inputMultiplicador $ \record x -> record {_inputMultiplicador = x}
-
-inputConstante :: Lens CongruencialModel InputValidado
-inputConstante = lens _inputConstante $ \record x -> record {_inputConstante = x}
-
-inputModulo :: Lens CongruencialModel InputValidado
-inputModulo = lens _inputModulo $ \record x -> record {_inputModulo = x}
-
-inputIteraciones :: Lens CongruencialModel InputValidado
-inputIteraciones = lens _inputIteraciones $ \record x -> record {_inputIteraciones = x}
-
-parametrosOriginales :: Lens CongruencialModel (Maybe (Int, Int, Int, Int))
-parametrosOriginales = lens _parametrosOriginales $ \record x -> record {_parametrosOriginales = x}
-
-historial :: Lens CongruencialModel (V.Vector Int)
-historial = lens _historial $ \record x -> record {_historial = x}
 
 -- | Estado inicial
 xcero :: CongruencialModel
@@ -212,7 +190,10 @@ updateModel action modelo = case action of
 -- | Renderizado visual del autómata Congruencial Lineal
 viewModel :: CongruencialModel -> View model CongruencialAction
 viewModel modelo = H.div_ []
-  [ H.h2_ [] [ text "Generador Congruencial Lineal" ]
+  [ H.h2_ [] 
+      [ text "Generador Congruencial Lineal "
+      , H.span_ [ class_ "formula-title" ] [ UM.formulaCongruencial ]
+      ]
   
   , H.div_ [] 
       [ H.strong_ [] [ text "Semilla original (", UM.x0, text "): " ]
@@ -245,7 +226,9 @@ viewModel modelo = H.div_ []
   
   , panelControles modelo
   , H.hr_ []
-  , tablaHistorial (_historial modelo)
+  , case _parametrosOriginales modelo of
+      Nothing -> H.div_ [] []
+      Just _  -> tablaHistorial (_historial modelo)
   ]
 
 panelControles :: CongruencialModel -> View model CongruencialAction

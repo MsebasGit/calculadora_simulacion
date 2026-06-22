@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Automatas.ProductosMedios
   ( ProductosMediosModel (..)
@@ -14,19 +15,22 @@ module Automatas.ProductosMedios
   , inputIteraciones
   , parametrosOriginales
   , historial
+  , paginaActual
   ) where
 
 import Miso
-import Miso.Lens
+import Control.Lens
 import qualified Funciones.Aleatorios as F
 import qualified Miso.Html as H
 import Miso.Html.Event (onClick)
-import Miso.Html.Property (class_)
+import Miso.Html.Property (class_, disabled_)
 
 import Text.Read (readMaybe)
 import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import UI.Math
+import qualified UI.Table as UT
+import Data.List (zip5)
 
 
 -- | Modelo local para el método de Productos Medios
@@ -38,7 +42,10 @@ data ProductosMediosModel = ProductosMediosModel
   , _xn0                  :: Int
   , _xn1                  :: Int
   , _historial            :: [Int]
+  , _paginaActual         :: Int
   } deriving (Show, Eq)
+
+makeLenses ''ProductosMediosModel
 
 -- | Acciones locales para el método de Productos Medios
 data ProductosMediosAction
@@ -50,29 +57,9 @@ data ProductosMediosAction
   | IterarNUsuario
   | IterarN Int
   | Reiniciar
+  | PaginaAnterior
+  | PaginaSiguiente
   deriving (Show, Eq)
-
--- | Lentes para manipular el modelo local
-xn0 :: Lens ProductosMediosModel Int
-xn0 = lens _xn0 $ \record x -> record {_xn0 = x}
-
-xn1 :: Lens ProductosMediosModel Int
-xn1 = lens _xn1 $ \record x -> record {_xn1 = x}
-
-inputSemilla0 :: Lens ProductosMediosModel InputValidado
-inputSemilla0 = lens _inputSemilla0 $ \record x -> record {_inputSemilla0 = x}
-
-inputSemilla1 :: Lens ProductosMediosModel InputValidado
-inputSemilla1 = lens _inputSemilla1 $ \record x -> record {_inputSemilla1 = x}
-
-inputIteraciones :: Lens ProductosMediosModel InputValidado
-inputIteraciones = lens _inputIteraciones $ \record x -> record {_inputIteraciones = x}
-
-parametrosOriginales :: Lens ProductosMediosModel (Maybe (Int, Int))
-parametrosOriginales = lens _parametrosOriginales $ \record x -> record {_parametrosOriginales = x}
-
-historial :: Lens ProductosMediosModel [Int]
-historial = lens _historial $ \record x -> record {_historial = x}
 
 -- | Estado inicial
 xcero :: ProductosMediosModel
@@ -80,7 +67,7 @@ xcero = ProductosMediosModel
   (InputValidado "" Nothing)
   (InputValidado "" Nothing)
   (InputValidado "10" Nothing)
-  Nothing 0 0 []
+  Nothing 0 0 [] 1
 
 -- | Actualización de estado local (pure update)
 updateModel :: ProductosMediosAction -> ProductosMediosModel -> ProductosMediosModel
@@ -132,6 +119,7 @@ updateModel action modelo = case action of
       , _xn0 = 0
       , _xn1 = 0
       , _historial = []
+      , _paginaActual = 1
       }
 
   IterarNUsuario ->
@@ -148,6 +136,7 @@ updateModel action modelo = case action of
                      { _xn0       = fin0
                      , _xn1       = fin1
                      , _historial = nuevosValores ++ _historial modelo
+                     , _paginaActual = 1
                      }
                in inputIteraciones %~ (errorActual .~ Nothing) $ modeloConHistorial
            | otherwise ->
@@ -167,6 +156,7 @@ updateModel action modelo = case action of
         { _xn0       = fin0
         , _xn1       = fin1
         , _historial = nuevosValores ++ _historial modelo
+        , _paginaActual = 1
         }
 
   Iterar ->
@@ -175,12 +165,28 @@ updateModel action modelo = case action of
       { _xn0       = next0
       , _xn1       = next1
       , _historial = next1 : _historial modelo
+      , _paginaActual = 1
       }
+
+  PaginaAnterior ->
+    if _paginaActual modelo > 1
+      then modelo { _paginaActual = _paginaActual modelo - 1 }
+      else modelo
+
+  PaginaSiguiente ->
+    let totalElementos = length (_historial modelo)
+        maxPagina = UT.calcularMaxPagina totalElementos
+    in if _paginaActual modelo < maxPagina
+         then modelo { _paginaActual = _paginaActual modelo + 1 }
+         else modelo
 
 -- | Renderizado visual del autómata Productos Medios
 viewModel :: ProductosMediosModel -> View model ProductosMediosAction
 viewModel modelo = H.div_ []
-  [ H.h2_ [] [ text "Generador de Productos Medios" ]
+  [ H.h2_ [] 
+      [ text "Generador de Productos Medios "
+      , H.span_ [ class_ "formula-title" ] [ formulaProductosMedios ]
+      ]
   
   , H.div_ [] 
       [ H.strong_ [] [ text "Semilla 1 original (", x0, text "): " ]
@@ -201,7 +207,9 @@ viewModel modelo = H.div_ []
   
   , panelControles modelo
   , H.hr_ []
-  , tablaHistorial (_historial modelo)
+  , case _parametrosOriginales modelo of
+      Nothing -> H.div_ [] []
+      Just (s0, s1) -> tablaHistorial (_paginaActual modelo) (_historial modelo) s0 s1
   ]
 
 panelControles :: ProductosMediosModel -> View model ProductosMediosAction
@@ -245,26 +253,63 @@ controlesSimulacion False modelo = H.div_ []
   , H.button_ [ onClick Reiniciar ] [ text "Reiniciar / Cambiar parámetros" ]
   ]
 
-tablaHistorial :: [Int] -> View model ProductosMediosAction
-tablaHistorial historialList = 
-  H.table_ []
-    [ H.thead_ []
-      [ H.tr_ []
-        [ H.th_ [] [ indexn ]
-        , H.th_ [] [ xn ]
-        , H.th_ [] [ rn ]
+tablaHistorial :: Int -> [Int] -> Int -> Int -> View model ProductosMediosAction
+tablaHistorial pagAct historialList s0 s1 =
+  H.div_ []
+    [ H.div_ [ class_ "table-responsive" ]
+        [ H.table_ []
+            [ H.thead_ []
+              [ H.tr_ []
+                [ H.th_ [] [ indexn ]
+                , H.th_ [] [ xn ]
+                , H.th_ [] [ xnp1 ]
+                , H.th_ [] [ rn ]
+                ]
+              ]
+            , H.tbody_ [] filasHTML
+            ]
         ]
-      ]
-    , H.tbody_ [] filasHTML
+    , H.div_ [ class_ "pagination-controls" ]
+        [ H.button_ ( onClick PaginaAnterior : [ disabled_ | pagAct <= 1 ]) [ text "Anterior" ]
+        , H.span_ [] [ text (ms (" Página " ++ show pagAct ++ " de " ++ show maxPagina ++ " ")) ]
+        , H.button_ ( onClick PaginaSiguiente : [ disabled_ | pagAct >= maxPagina ]) [ text "Siguiente" ]
+        ]
     ]
   where
-    listaValores = reverse historialList
-    listaPseudo  = map F.pseudoaleatorioNC listaValores
-    listaNumerada = zip3 [1..] listaValores listaPseudo :: [(Int, Int, Float)]
+    elementosPorPagina = UT.elementosPorPagina
+    totalElementos = length historialList
+    maxPagina = UT.calcularMaxPagina totalElementos
+
+    -- Slicing eficiente sobre la lista:
+    startIndex = (pagAct - 1) * elementosPorPagina
+    endIndex = min totalElementos (pagAct * elementosPorPagina)
+    numElementos = endIndex - startIndex
+
+    -- Los elementos completos reversados con las dos semillas al final (X_1, X_0)
+    valoresCompletoReversados = historialList ++ [s1, s0]
+    sliceStart = totalElementos - endIndex
+
+    -- Extraemos las 3 columnas correspondientes a la ventana de esta página
+    xn2PaginadosReversados = take numElementos $ drop sliceStart valoresCompletoReversados
+    xn2Paginados = reverse xn2PaginadosReversados
+
+    xn1PaginadosReversados = take numElementos $ drop (sliceStart + 1) valoresCompletoReversados
+    xn1Paginados = reverse xn1PaginadosReversados
+
+    xnPaginadosReversados = take numElementos $ drop (sliceStart + 2) valoresCompletoReversados
+    xnPaginados = reverse xnPaginadosReversados
+
+    pseudoPaginados = map F.pseudoaleatorioNC xn2Paginados
+
+    listaNumeradaPaginada = zip5 [startIndex + 1 ..] xnPaginados xn1Paginados xn2Paginados pseudoPaginados
+
     filasHTML = [ H.tr_ [] 
                     [ H.td_ [] [ text (ms (show iteracion)) ]
-                    , H.td_ [] [ text (ms (show valor)) ] 
+                    , H.td_ [] [ text (ms (show valXn)) ] 
+                    , H.td_ [] [ text (ms (show valXnp1)) ] 
                     , H.td_ [] [ text (ms (show pseudo)) ] 
                     ] 
-                | (iteracion, valor, pseudo) <- listaNumerada 
+                | (iteracion, valXn, valXnp1, _, pseudo) <- listaNumeradaPaginada 
                 ]
+
+
