@@ -63,11 +63,20 @@ executable calculadora-simulacion
     main-is:          Main.hs
 
     -- Modules included in this executable, other than Main.
-    other-modules: Funciones.NoCongruenciales,
-                   Funciones.Congruenciales,
-                   Types,
-                   Update,
-                   View
+    other-modules: Funciones.Aleatorios,
+                   Funciones.Estadisticas,
+                   Automatas.CuadradosMedios,
+                   Automatas.MultiplicadorConstante,
+                   Automatas.Congruencial,
+                   Automatas.PruebasEstadisticas,
+                   Automatas.ProductosMedios,
+                   SubAutomatas.InputValidado,
+                   UI.Navbar,
+                   UI.Math,
+                   UI.Table,
+                   GlobalTypes,
+                   GlobalUpdate,
+                   GlobalView
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -76,7 +85,11 @@ executable calculadora-simulacion
     build-depends:    base >=4.18 && <5,
                       miso,
                       text,
-                      mtl
+                      mtl,
+                      vector,
+                      containers,
+                      statistics,
+                      lens
 
     -- Directories containing source files.
     hs-source-dirs:   app
