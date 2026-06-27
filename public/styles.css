@@ -575,3 +575,52 @@ td:nth-child(2), td:nth-child(3), td:nth-child(4) {
   flex-direction: column;
   gap: 0.25rem;
 }
+
+/* Dashboard Test Card Styles */
+.card-pass {
+  background-color: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+.card-fail {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.dashboard-stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.dashboard-stat-label {
+  font-weight: 600;
+  color: var(--subtext1);
+}
+
+.dashboard-stat-value {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.dashboard-verdict {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.verdict-pass {
+  color: #15803d;
+}
+
+.verdict-fail {
+  color: #b91c1c;
+}

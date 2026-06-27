@@ -285,28 +285,36 @@ vistaResultado titulo significado formula Nothing =
     , div_ [ class_ "result-stats" ] [ text "Esperando datos..." ]
     ]
 vistaResultado titulo significado formula (Just res) = 
-  let pasa       = _pasaPrueba res
-      mensaje :: String
-      mensaje    = if pasa then "Aprobado" else "Reprobado"
-      badgeClass :: String
-      badgeClass = if pasa then "result-badge badge-pass" else "result-badge badge-fail"
-      esKS       = "Kolmogorov" `isInfixOf` fromMisoString titulo
-      lblCritico = if esKS then "P-Valor: " else "Valor Crítico: "
+  let pasa        = _pasaPrueba res
+      cardClass :: String
+      cardClass   = if pasa then "result-card card-pass" else "result-card card-fail"
+      verdictClass :: String
+      verdictClass = if pasa then "verdict-pass" else "verdict-fail"
+      verdictMsg :: String
+      verdictMsg   = if pasa then "Aprobado" else "Reprobado"
       
-      calcStr = printf "%.4f" (_estadisticoCalculado res) :: String
-      teorStr = printf "%.4f" (_valorTeorico res) :: String
-      lblCriticoStr :: String
-      lblCriticoStr = lblCritico
-  in div_ [ class_ "result-card" ]
+      esKS        = "Kolmogorov" `isInfixOf` fromMisoString titulo
+      lblCritico :: String
+      lblCritico  = if esKS then "P-Valor (Línea Roja):" else "Línea Roja:"
+      
+      calcStr = printf "%.3f" (_estadisticoCalculado res) :: String
+      teorStr = printf "%.3f" (_valorTeorico res) :: String
+  in div_ [ class_ (ms cardClass) ]
        [ div_ [ class_ "result-header" ]
-           [ h5_ [ class_ "result-title" ] [ text titulo ]
-           , span_ [ class_ (ms badgeClass) ] [ text (ms mensaje) ]
-           ]
+           [ h5_ [ class_ "result-title" ] [ text titulo ] ]
        , p_ [ class_ "result-description" ] [ text significado ]
        , div_ [ class_ "result-formula" ] [ formula ]
-       , div_ [ class_ "result-stats" ]
-           [ div_ [] [ text ("Estadístico: " <> ms calcStr) ]
-           , div_ [] [ text (ms lblCriticoStr <> ms teorStr) ]
+       , div_ [ class_ "dashboard-stat-row" ]
+           [ span_ [ class_ "dashboard-stat-label" ] [ text "Tu Resultado:" ]
+           , span_ [ class_ "dashboard-stat-value" ] [ text (ms calcStr) ]
+           ]
+       , div_ [ class_ "dashboard-stat-row" ]
+           [ span_ [ class_ "dashboard-stat-label" ] [ text (ms lblCritico) ]
+           , span_ [ class_ "dashboard-stat-value" ] [ text (ms teorStr) ]
+           ]
+       , div_ [ class_ "dashboard-verdict" ]
+           [ span_ [] [ text "Veredicto:" ]
+           , span_ [ class_ (ms verdictClass) ] [ text (ms verdictMsg) ]
            ]
        ]
 
