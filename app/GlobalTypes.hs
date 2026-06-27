@@ -12,6 +12,8 @@ module GlobalTypes
   , productosMedios
   , mersenneTwister
   , activeTab
+  , SeccionPrincipal (..)
+  , seccionActiva
   ) where
 
 import Miso.Lens
@@ -23,9 +25,17 @@ import qualified Automatas.MultiplicadorConstante as MC
 import qualified Automatas.ProductosMedios as PM
 import qualified Automatas.MersenneTwister as MT
 
+-- | Secciones principales de la aplicación
+data SeccionPrincipal
+  = SeccionPseudoaleatorios
+  | SeccionRuleta
+  | SeccionCovid
+  deriving (Show, Eq)
+
 -- | Modelo global
 data Model = Model
-  { _cuadradosMedios        :: CM.CuadradosMediosModel
+  { _seccionActiva          :: SeccionPrincipal
+  , _cuadradosMedios        :: CM.CuadradosMediosModel
   , _congruencial           :: C.CongruencialModel
   , _congruencialMult       :: CMul.CongruencialMultModel
   , _pruebasEstadisticas    :: PE.PruebasEstadisticasModel
@@ -56,6 +66,7 @@ data Action
   | AccionProductosMedios PM.ProductosMediosAction
   | AccionMersenneTwister MT.MersenneTwisterAction
   | CambiarTab Tab
+  | CambiarSeccion SeccionPrincipal
   deriving (Show, Eq)
 
 -- | Lentes globales
@@ -83,10 +94,14 @@ mersenneTwister = lens _mersenneTwister $ \record x -> record {_mersenneTwister 
 activeTab :: Lens Model Tab
 activeTab = lens _activeTab $ \record x -> record {_activeTab = x}
 
+seccionActiva :: Lens Model SeccionPrincipal
+seccionActiva = lens _seccionActiva $ \record x -> record {_seccionActiva = x}
+
 -- | Modelo inicial global
 modeloInicial :: Model
 modeloInicial = Model
-  { _cuadradosMedios        = CM.xcero
+  { _seccionActiva          = SeccionPseudoaleatorios
+  , _cuadradosMedios        = CM.xcero
   , _congruencial           = C.xcero
   , _congruencialMult       = CMul.xcero
   , _pruebasEstadisticas    = PE.xcero

@@ -40,3 +40,6 @@ updateModel = \case
 
   CambiarTab tab ->
     activeTab .= tab
+
+  CambiarSeccion seccion ->
+    seccionActiva .= seccion
