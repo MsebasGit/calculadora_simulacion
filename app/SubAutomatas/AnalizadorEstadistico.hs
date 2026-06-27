@@ -5,6 +5,7 @@ module SubAutomatas.AnalizadorEstadistico where
 import Miso
 import Miso.Html
 import Miso.Lens
+import Miso.Html.Property (class_)
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
 import Text.Read (readMaybe)
@@ -30,6 +31,7 @@ data ResultadosMultiples = ResultadosMultiples
   , _resVarianza    :: Maybe ResultadoPrueba
   , _resChiCuadrada :: Maybe ResultadoPrueba
   , _resKolmogorov  :: Maybe ResultadoPrueba
+  , _resCorridas    :: Maybe ResultadoPrueba
   } deriving (Show, Eq)
 
 -- El Estado principal del analizador
@@ -65,7 +67,7 @@ analizadorInicial = AnalizadorModel
   , _intervalosChi   = Nothing
   , _inputIntervalos = InputValidado "" Nothing -- Vacío por defecto
   
-  , _resultados      = ResultadosMultiples Nothing Nothing Nothing Nothing
+  , _resultados      = ResultadosMultiples Nothing Nothing Nothing Nothing Nothing
   }
 
 -- ==========================================
@@ -133,11 +135,15 @@ updateAnalizador = \case
         (calcK, critK, pasaK) = pruebaKolmogorovSmirnov alpha datosUnboxed
         resK = Resultado calcK critK pasaK
         
+        (calcR, critR, pasaR) = pruebaDeCorridas alpha datosUnboxed
+        resR = Resultado calcR critR pasaR
+        
         nuevosResultados = ResultadosMultiples 
           { _resMedias      = Just resM
           , _resVarianza    = Just resV
           , _resChiCuadrada = Just resC
           , _resKolmogorov  = Just resK
+          , _resCorridas    = Just resR
           }
     in modelo { _resultados = nuevosResultados }
 
@@ -169,11 +175,25 @@ viewAnalizador modelo = div_ [  ]
   -- Pero mostramos los resultados aquí
   , hr_ []
   , h3_ [] [ text "Resultados" ]
-  , div_ [  ]
-      [ vistaResultado "Prueba de Medias" (_resMedias (_resultados modelo))
-      , vistaResultado "Prueba de Varianza" (_resVarianza (_resultados modelo))
-      , vistaResultado "Prueba Chi-Cuadrada" (_resChiCuadrada (_resultados modelo))
-      , vistaResultado "Prueba Kolmogorov-Smirnov" (_resKolmogorov (_resultados modelo))
+  , div_ [ class_ "results-container" ]
+      [ -- Sección de Uniformidad
+        div_ [ class_ "results-section" ]
+          [ h4_ [] [ text "Pruebas de Uniformidad" ]
+          , div_ [ class_ "results-grid" ]
+              [ vistaResultado "Prueba de Medias" (_resMedias (_resultados modelo))
+              , vistaResultado "Prueba de Varianza" (_resVarianza (_resultados modelo))
+              , vistaResultado "Prueba Chi-Cuadrada" (_resChiCuadrada (_resultados modelo))
+              , vistaResultado "Prueba Kolmogorov-Smirnov" (_resKolmogorov (_resultados modelo))
+              ]
+          ]
+      , hr_ []
+      -- Sección de Independencia
+      , div_ [ class_ "results-section" ]
+          [ h4_ [] [ text "Pruebas de Independencia" ]
+          , div_ [ class_ "results-grid" ]
+              [ vistaResultado "Prueba de Corridas (Arriba/Abajo)" (_resCorridas (_resultados modelo))
+              ]
+          ]
       ]
   ]
 
