@@ -8,9 +8,11 @@ import qualified Miso.Html as H
 import GlobalTypes
 import qualified Automatas.CuadradosMedios as CM
 import qualified Automatas.Congruencial as C
+import qualified Automatas.CongruencialMult as CMul
 import qualified Automatas.PruebasEstadisticas as PE
 import qualified Automatas.MultiplicadorConstante as MC
 import qualified Automatas.ProductosMedios as PM
+import qualified Automatas.MersenneTwister as MT
 import UI.Navbar (viewNavbar)
 import Miso.Html.Property (class_)
 
@@ -28,11 +30,15 @@ viewModel _ modelo = H.div_ [ class_ "app-container" ]
             fmap AccionCuadradosMedios (CM.viewModel (_cuadradosMedios modelo))
           TabCongruencial ->
             fmap AccionCongruencial (C.viewModel (_congruencial modelo))
+          TabCongruencialMult ->
+            fmap AccionCongruencialMult (CMul.viewModel (_congruencialMult modelo))
           TabPruebasEstadisticas ->
             fmap AccionPruebasEstadisticas (PE.viewModel (_pruebasEstadisticas modelo))
           TabMultiplicadorConstante ->
             fmap AccionMultiplicadorConstante (MC.viewModel (_multiplicadorConstante modelo))
           TabProductosMedios ->
             fmap AccionProductosMedios (PM.viewModel (_productosMedios modelo))
+          TabMersenneTwister ->
+            fmap AccionMersenneTwister (MT.viewModel (_mersenneTwister modelo))
       ]
   ]

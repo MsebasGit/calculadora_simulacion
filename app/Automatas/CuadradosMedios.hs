@@ -14,6 +14,7 @@ module Automatas.CuadradosMedios
   , semillaOriginal
   , historial
   , paginaActual
+  , analizador
   ) where
 
 import Miso
@@ -28,6 +29,8 @@ import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import qualified UI.Math as UM
 import qualified UI.Table as UT
+import qualified Data.Vector as V
+import SubAutomatas.AnalizadorEstadistico
 
 
 -- | Modelo local para el método de Cuadrados Medios
@@ -38,6 +41,7 @@ data CuadradosMediosModel = CuadradosMediosModel
   , _xn                :: Int
   , _historial         :: [Int]
   , _paginaActual      :: Int
+  , _analizador        :: AnalizadorModel
   } deriving (Show, Eq)
 
 makeLenses ''CuadradosMediosModel
@@ -53,11 +57,12 @@ data CuadradosMediosAction
   | Reiniciar
   | PaginaAnterior
   | PaginaSiguiente
+  | AccionAnalizador AnalizadorAction
   deriving (Show, Eq)
 
 -- | Estado inicial
 xcero :: CuadradosMediosModel
-xcero = CuadradosMediosModel (InputValidado "" Nothing) (InputValidado "10" Nothing) Nothing 0 [] 1 
+xcero = CuadradosMediosModel (InputValidado "" Nothing) (InputValidado "10" Nothing) Nothing 0 [] 1 analizadorInicial 
 
 -- | Actualización de estado local (pure update)
 updateModel :: CuadradosMediosAction -> CuadradosMediosModel -> CuadradosMediosModel
@@ -137,6 +142,9 @@ updateModel action modelo = case action of
          then modelo { _paginaActual = _paginaActual modelo + 1 }
          else modelo
 
+  AccionAnalizador subAct ->
+    analizador %~ updateAnalizador subAct $ modelo
+
 
 
 viewModel :: CuadradosMediosModel -> View model CuadradosMediosAction
@@ -163,7 +171,18 @@ viewModel modelo = H.div_ []
   , H.hr_ []
   , case _semillaOriginal modelo of
       Nothing -> H.div_ [] []
-      Just _  -> tablaHistorial (_paginaActual modelo) (_historial modelo)
+      Just _  -> H.div_ []
+         [ tablaHistorial (_paginaActual modelo) (_historial modelo)
+         , if null (_historial modelo)
+             then H.div_ [] []
+             else H.div_ [ class_ "card fade-in" ]
+               [ H.h3_ [] [ text "Pruebas Estadísticas" ]
+               , H.button_ [ onClick (AccionAnalizador (EjecutarPruebas (V.fromList (map (realToFrac . F.pseudoaleatorioNC) (_historial modelo))))), class_ "btn-primary" ]
+                   [ text "Ejecutar Pruebas Estadísticas" ]
+               , H.hr_ []
+               , fmap AccionAnalizador (viewAnalizador (_analizador modelo))
+               ]
+         ]
   ]
 
 ---
@@ -190,7 +209,7 @@ panelControles modelo = H.div_ [ ]
         Nothing -> H.div_ [] 
           [ H.div_ [] [ text "Semilla (", UM.x0, text "):" ]
           , viewInputValidado AccionInputSemilla (_inputSemilla modelo)
-          , H.button_ [ onClick FijarSemilla ]
+          , H.button_ [ onClick FijarSemilla, class_ "btn-primary" ]
                       [ text ("Pulse aquí para fijar la semilla: " <> _textoTemporal (_inputSemilla modelo))]
           ]
         Just _  ->

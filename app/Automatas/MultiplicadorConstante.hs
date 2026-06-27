@@ -16,6 +16,7 @@ module Automatas.MultiplicadorConstante
   , historial
   , c
   , paginaActual
+  , analizador
   ) where
 
 import Miso
@@ -31,6 +32,8 @@ import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import qualified UI.Math as UM
 import qualified UI.Table as UT
+import qualified Data.Vector as V
+import SubAutomatas.AnalizadorEstadistico
 
 
 -- | Modelo local para el método de Multiplicador Constante
@@ -43,6 +46,7 @@ data MultConstanteModel = MultConstanteModel
   , _c                    :: Int 
   , _historial            :: [Int]
   , _paginaActual         :: Int
+  , _analizador           :: AnalizadorModel
   } deriving (Show, Eq)
 
 makeLenses ''MultConstanteModel
@@ -59,6 +63,7 @@ data MultConstanteAction
   | Reiniciar
   | PaginaAnterior
   | PaginaSiguiente
+  | AccionAnalizador AnalizadorAction
   deriving (Show, Eq)
 
 -- | Estado inicial
@@ -66,7 +71,7 @@ xcero :: MultConstanteModel
 xcero = MultConstanteModel (InputValidado "" Nothing)
                            (InputValidado "10" Nothing)
                            (InputValidado "" Nothing)
-                           Nothing 0 0 [] 1 
+                           Nothing 0 0 [] 1 analizadorInicial
 
 
 -- | Actualización de estado local (pure update)
@@ -173,6 +178,9 @@ updateModel action modelo = case action of
          then modelo { _paginaActual = _paginaActual modelo + 1 }
          else modelo
 
+  AccionAnalizador subAct ->
+    analizador %~ updateAnalizador subAct $ modelo
+
 
 
 viewModel :: MultConstanteModel -> View model MultConstanteAction
@@ -205,7 +213,18 @@ viewModel modelo = H.div_ []
   , H.hr_ []
   , case _parametrosOriginales modelo of
       Nothing -> H.div_ [] []
-      Just _  -> tablaHistorial (_paginaActual modelo) (_historial modelo)
+      Just _  -> H.div_ []
+         [ tablaHistorial (_paginaActual modelo) (_historial modelo)
+         , if null (_historial modelo)
+             then H.div_ [] []
+             else H.div_ [ class_ "card fade-in" ]
+               [ H.h3_ [] [ text "Pruebas Estadísticas" ]
+               , H.button_ [ onClick (AccionAnalizador (EjecutarPruebas (V.fromList (map (realToFrac . F.pseudoaleatorioNC) (_historial modelo))))), class_ "btn-primary" ]
+                   [ text "Ejecutar Pruebas Estadísticas" ]
+               , H.hr_ []
+               , fmap AccionAnalizador (viewAnalizador (_analizador modelo))
+               ]
+         ]
   ]
 
 ---
@@ -228,7 +247,7 @@ panelControles modelo = H.div_ [ ]
           , H.div_ [] [ text "Constante (", UM.constc, text "):" ]
           , viewInputValidado AccionInputConstante (_inputConstante modelo)
           , H.hr_ []
-          , H.button_ [ onClick FijarParametros ]
+          , H.button_ [ onClick FijarParametros, class_ "btn-primary" ]
                       [ text "Fijar Semilla y Constante" ]
           ]
 

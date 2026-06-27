@@ -6,26 +6,32 @@ module GlobalTypes
   , modeloInicial
   , cuadradosMedios
   , congruencial
+  , congruencialMult
   , pruebasEstadisticas
   , multiplicadorConstante
   , productosMedios
+  , mersenneTwister
   , activeTab
   ) where
 
 import Miso.Lens
 import qualified Automatas.CuadradosMedios as CM
 import qualified Automatas.Congruencial as C
+import qualified Automatas.CongruencialMult as CMul
 import qualified Automatas.PruebasEstadisticas as PE
 import qualified Automatas.MultiplicadorConstante as MC
 import qualified Automatas.ProductosMedios as PM
+import qualified Automatas.MersenneTwister as MT
 
 -- | Modelo global
 data Model = Model
   { _cuadradosMedios        :: CM.CuadradosMediosModel
   , _congruencial           :: C.CongruencialModel
+  , _congruencialMult       :: CMul.CongruencialMultModel
   , _pruebasEstadisticas    :: PE.PruebasEstadisticasModel
   , _multiplicadorConstante :: MC.MultConstanteModel
   , _productosMedios        :: PM.ProductosMediosModel
+  , _mersenneTwister        :: MT.MersenneTwisterModel
   , _activeTab              :: Tab
   } deriving (Show, Eq)
 
@@ -33,18 +39,22 @@ data Model = Model
 data Tab
   = TabCuadradosMedios
   | TabCongruencial
+  | TabCongruencialMult
   | TabPruebasEstadisticas
   | TabMultiplicadorConstante
   | TabProductosMedios
+  | TabMersenneTwister
   deriving (Show, Eq)
 
 -- | Acciones globales
 data Action
   = AccionCuadradosMedios CM.CuadradosMediosAction
   | AccionCongruencial C.CongruencialAction
+  | AccionCongruencialMult CMul.CongruencialMultAction
   | AccionPruebasEstadisticas PE.PruebasEstadisticasAction
   | AccionMultiplicadorConstante MC.MultConstanteAction
   | AccionProductosMedios PM.ProductosMediosAction
+  | AccionMersenneTwister MT.MersenneTwisterAction
   | CambiarTab Tab
   deriving (Show, Eq)
 
@@ -55,6 +65,9 @@ cuadradosMedios = lens _cuadradosMedios $ \record x -> record {_cuadradosMedios 
 congruencial :: Lens Model C.CongruencialModel
 congruencial = lens _congruencial $ \record x -> record {_congruencial = x}
 
+congruencialMult :: Lens Model CMul.CongruencialMultModel
+congruencialMult = lens _congruencialMult $ \record x -> record {_congruencialMult = x}
+
 pruebasEstadisticas :: Lens Model PE.PruebasEstadisticasModel
 pruebasEstadisticas = lens _pruebasEstadisticas $ \record x -> record {_pruebasEstadisticas = x}
 
@@ -64,6 +77,9 @@ multiplicadorConstante = lens _multiplicadorConstante $ \record x -> record {_mu
 productosMedios :: Lens Model PM.ProductosMediosModel
 productosMedios = lens _productosMedios $ \record x -> record {_productosMedios = x}
 
+mersenneTwister :: Lens Model MT.MersenneTwisterModel
+mersenneTwister = lens _mersenneTwister $ \record x -> record {_mersenneTwister = x}
+
 activeTab :: Lens Model Tab
 activeTab = lens _activeTab $ \record x -> record {_activeTab = x}
 
@@ -72,8 +88,10 @@ modeloInicial :: Model
 modeloInicial = Model
   { _cuadradosMedios        = CM.xcero
   , _congruencial           = C.xcero
+  , _congruencialMult       = CMul.xcero
   , _pruebasEstadisticas    = PE.xcero
   , _multiplicadorConstante = MC.xcero
   , _productosMedios        = PM.xcero
+  , _mersenneTwister        = MT.xcero
   , _activeTab              = TabCuadradosMedios
   }

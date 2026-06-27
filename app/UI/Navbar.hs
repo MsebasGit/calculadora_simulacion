@@ -15,10 +15,11 @@ viewNavbar activeTabVal =
   H.nav_ [ class_ "navbar" ]
     [ H.ul_ [ class_ "nav-list" ]
         [ navItem TabCuadradosMedios "Cuadrados Medios"
-        , navItem TabCongruencial "Congruencial"
-        , navItem TabPruebasEstadisticas "Pruebas Estadísticas"
+        , navItem TabCongruencial "Congruencial Lineal"
+        , navItem TabCongruencialMult "Congruencial Multiplicativo"
         , navItem TabMultiplicadorConstante "Multiplicador Constante"
         , navItem TabProductosMedios "Productos Medios"
+        , navItem TabMersenneTwister "Mersenne Twister"
         ]
     ]
   where

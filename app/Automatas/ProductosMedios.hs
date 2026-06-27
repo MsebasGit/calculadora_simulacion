@@ -16,6 +16,7 @@ module Automatas.ProductosMedios
   , parametrosOriginales
   , historial
   , paginaActual
+  , analizador
   ) where
 
 import Miso
@@ -30,6 +31,8 @@ import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import UI.Math
 import qualified UI.Table as UT
+import qualified Data.Vector as V
+import SubAutomatas.AnalizadorEstadistico
 import Data.List (zip5)
 
 
@@ -43,6 +46,7 @@ data ProductosMediosModel = ProductosMediosModel
   , _xn1                  :: Int
   , _historial            :: [Int]
   , _paginaActual         :: Int
+  , _analizador           :: AnalizadorModel
   } deriving (Show, Eq)
 
 makeLenses ''ProductosMediosModel
@@ -59,15 +63,12 @@ data ProductosMediosAction
   | Reiniciar
   | PaginaAnterior
   | PaginaSiguiente
+  | AccionAnalizador AnalizadorAction
   deriving (Show, Eq)
 
 -- | Estado inicial
 xcero :: ProductosMediosModel
-xcero = ProductosMediosModel
-  (InputValidado "" Nothing)
-  (InputValidado "" Nothing)
-  (InputValidado "10" Nothing)
-  Nothing 0 0 [] 1
+xcero = ProductosMediosModel (InputValidado "" Nothing) (InputValidado "" Nothing) (InputValidado "10" Nothing) Nothing 0 0 [] 1 analizadorInicial
 
 -- | Actualización de estado local (pure update)
 updateModel :: ProductosMediosAction -> ProductosMediosModel -> ProductosMediosModel
@@ -180,6 +181,9 @@ updateModel action modelo = case action of
          then modelo { _paginaActual = _paginaActual modelo + 1 }
          else modelo
 
+  AccionAnalizador subAct ->
+    analizador %~ updateAnalizador subAct $ modelo
+
 -- | Renderizado visual del autómata Productos Medios
 viewModel :: ProductosMediosModel -> View model ProductosMediosAction
 viewModel modelo = H.div_ []
@@ -209,7 +213,18 @@ viewModel modelo = H.div_ []
   , H.hr_ []
   , case _parametrosOriginales modelo of
       Nothing -> H.div_ [] []
-      Just (s0, s1) -> tablaHistorial (_paginaActual modelo) (_historial modelo) s0 s1
+      Just (s0, s1) -> H.div_ []
+         [ tablaHistorial (_paginaActual modelo) (_historial modelo) s0 s1
+         , if null (_historial modelo)
+             then H.div_ [] []
+             else H.div_ [ class_ "card fade-in" ]
+               [ H.h3_ [] [ text "Pruebas Estadísticas" ]
+               , H.button_ [ onClick (AccionAnalizador (EjecutarPruebas (V.fromList (map (realToFrac . F.pseudoaleatorioNC) (_historial modelo))))), class_ "btn-primary" ]
+                   [ text "Ejecutar Pruebas Estadísticas" ]
+               , H.hr_ []
+               , fmap AccionAnalizador (viewAnalizador (_analizador modelo))
+               ]
+         ]
   ]
 
 panelControles :: ProductosMediosModel -> View model ProductosMediosAction
@@ -228,7 +243,7 @@ panelControles modelo = H.div_ []
           , H.div_ [] [ text "Semilla 2 (", x1, text "):" ]
           , viewInputValidado AccionInputSemilla1 (_inputSemilla1 modelo)
           , H.hr_ []
-          , H.button_ [ onClick FijarParametros ]
+          , H.button_ [ onClick FijarParametros, class_ "btn-primary" ]
                       [ text "Fijar Semillas" ]
           ]
 

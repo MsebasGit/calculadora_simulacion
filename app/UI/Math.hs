@@ -13,6 +13,13 @@ module UI.Math
   , formulaProductosMedios
   , formulaMultiplicadorConstante
   , formulaCongruencial
+  , formulaMersenneTwister
+  , formulaCongruencialMult
+  , constk
+  , constg
+  , constN
+  , formulaM2g
+  , formulaPeriodoN
   ) where
 
 import Miso
@@ -199,3 +206,134 @@ formulaCongruencial =
       M.mi_ [] [text "m"]
     ]
   ]
+
+-- | Fórmula: X_{k+n} = X_{k+m} ^ ((X_k^u | X_{k+1}^l) * A)
+formulaMersenneTwister :: View model action
+formulaMersenneTwister =
+  M.math_ [] [
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "k"],
+        M.mo_ [] [text "+"],
+        M.mi_ [] [text "n"]
+      ]
+    ],
+    M.mo_ [] [text "="],
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "k"],
+        M.mo_ [] [text "+"],
+        M.mi_ [] [text "m"]
+      ]
+    ],
+    M.mo_ [] [text "⊕"],
+    M.mrow_ [] [
+      M.mo_ [] [text "("],
+      M.mrow_ [] [
+        M.mo_ [] [text "("],
+        M.msub_ [] [
+          M.mi_ [] [text "X"],
+          M.mi_ [] [text "k"]
+        ],
+        M.mo_ [] [text "u"],
+        M.mo_ [] [text "|"],
+        M.msub_ [] [
+          M.mi_ [] [text "X"],
+          M.mrow_ [] [
+            M.mi_ [] [text "k"],
+            M.mo_ [] [text "+"],
+            M.mn_ [] [text "1"]
+          ]
+        ],
+        M.mo_ [] [text "l"],
+        M.mo_ [] [text ")"],
+        M.mo_ [] [text "·"],
+        M.mi_ [] [text "A"]
+      ],
+      M.mo_ [] [text ")"]
+    ]
+  ]
+
+-- | Fórmula: X_{n+1} = (a * X_n) mod m
+formulaCongruencialMult :: View model action
+formulaCongruencialMult =
+  M.math_ [] [
+    M.msub_ [] [
+      M.mi_ [] [text "X"],
+      M.mrow_ [] [
+        M.mi_ [] [text "n"],
+        M.mo_ [] [text "+"],
+        M.mn_ [] [text "1"]
+      ]
+    ],
+    M.mo_ [] [text "="],
+    M.mrow_ [] [
+      M.mo_ [] [text "("],
+      M.mi_ [] [text "a"],
+      M.mo_ [] [text "·"],
+      M.msub_ [] [
+        M.mi_ [] [text "X"],
+        M.mi_ [] [text "n"]
+      ],
+      M.mo_ [] [text ")"],
+      M.mo_ [] [text "mod"],
+      M.mi_ [] [text "m"]
+    ]
+  ]
+
+-- | Renderiza k
+constk :: View model action
+constk =
+  M.math_ [] [
+    M.mi_ [] [text "k"]
+  ]
+
+-- | Renderiza g
+constg :: View model action
+constg =
+  M.math_ [] [
+    M.mi_ [] [text "g"]
+  ]
+
+-- | Renderiza N
+constN :: View model action
+constN =
+  M.math_ [] [
+    M.mi_ [] [text "N"]
+  ]
+
+-- | Fórmula: m = 2^g
+formulaM2g :: View model action
+formulaM2g =
+  M.math_ [] [
+    M.mi_ [] [text "m"],
+    M.mo_ [] [text "="],
+    M.msup_ [] [
+      M.mn_ [] [text "2"],
+      M.mi_ [] [text "g"]
+    ]
+  ]
+
+-- | Fórmula: N = m/4 = 2^(g-2)
+formulaPeriodoN :: View model action
+formulaPeriodoN =
+  M.math_ [] [
+    M.mi_ [] [text "N"],
+    M.mo_ [] [text "="],
+    M.mfrac_ [] [
+      M.mi_ [] [text "m"],
+      M.mn_ [] [text "4"]
+    ],
+    M.mo_ [] [text "="],
+    M.msup_ [] [
+      M.mn_ [] [text "2"],
+      M.mrow_ [] [
+        M.mi_ [] [text "g"],
+        M.mo_ [] [text "−"],
+        M.mn_ [] [text "2"]
+      ]
+    ]
+  ]
+

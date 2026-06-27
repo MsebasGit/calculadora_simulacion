@@ -1,9 +1,11 @@
 module Funciones.Aleatorios
   ( congruencialLineal
+  , congLinealMult
   , cuadradosMedios
   , productosMedios
   , multiplicadorConstante
   , pseudoaleatorioNC
+  , pseudoaleatorioCL
   ) where
 
 -- | Generador Congruencial Lineal
@@ -29,3 +31,19 @@ multiplicadorConstante c x0 = centro $ x0 * c
 -- | Generar pseudoaleatorio de 4 decimales entre 0 y 1 (No congruencial)
 pseudoaleatorioNC :: Int -> Float
 pseudoaleatorioNC n = fromIntegral n / 10000 
+
+-- | Generar pseudoaleatorio de 4 decimales entre 0 y 1 (Congruencial lineal)
+pseudoaleatorioCL :: Int -> Int -> Double
+pseudoaleatorioCL x_n m = fromIntegral x_n / fromIntegral (m - 1)
+
+constanteMultiplicador :: Int -> Int -> Int
+constanteMultiplicador 3 = \k -> 3 + 8*k
+constanteMultiplicador 5 = \k -> 5 + 8*k
+constanteMultiplicador _ = error "Debe ser 3 o 5"
+ 
+-- | Algoritmo congruencial lineal multiplicativo
+congLinealMult :: Int -> Int -> Int -> Int -> Int 
+congLinealMult x0 k g opt =
+  let m = 2^g 
+      a = constanteMultiplicador opt k  
+  in (a*x0) `mod` m  
