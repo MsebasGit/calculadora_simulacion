@@ -3,6 +3,10 @@ import qualified Data.Vector.Unboxed as U
 import Statistics.Distribution (quantile)
 import Statistics.Distribution.Normal (standard)
 import Statistics.Distribution.ChiSquared (chiSquared)
+import Statistics.Distribution.Uniform (uniformDistr)
+import Statistics.Test.KolmogorovSmirnov (kolmogorovSmirnovTest)
+import Statistics.Test.Types (Test(..))
+import Statistics.Types (pValue)
 
 pruebaDeMedias :: Double -> U.Vector Double -> (Double, Double, Bool)  
 pruebaDeMedias alpha numeros = 
@@ -68,3 +72,14 @@ pruebaChiCuadrada alpha m k_numeros =
         chiCritico = quantile distChi (1 - alpha)
         pasaPrueba = chiCalculado <= chiCritico
     in (chiCalculado, chiCritico, pasaPrueba)  
+
+-- | Prueba de Kolmogorov-Smirnov comparada con una distribución Uniforme U(0,1)
+pruebaKolmogorovSmirnov :: Double -> U.Vector Double -> (Double, Double, Bool)
+pruebaKolmogorovSmirnov alpha numeros =
+  case kolmogorovSmirnovTest (uniformDistr 0 1) numeros of
+    Nothing -> (0.0, 1.0, False)
+    Just t  ->
+      let pVal = pValue (testSignificance t)
+          dStat = testStatistics t
+          pasaPrueba = pVal >= alpha
+      in (dStat, pVal, pasaPrueba)  

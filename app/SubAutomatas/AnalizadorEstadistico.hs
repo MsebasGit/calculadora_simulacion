@@ -8,6 +8,7 @@ import Miso.Lens
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
 import Text.Read (readMaybe)
+import Data.List (isInfixOf)
 import Funciones.Estadisticas 
 
 -- Importamos nuestro sub-autómata técnico
@@ -28,6 +29,7 @@ data ResultadosMultiples = ResultadosMultiples
   { _resMedias      :: Maybe ResultadoPrueba
   , _resVarianza    :: Maybe ResultadoPrueba
   , _resChiCuadrada :: Maybe ResultadoPrueba
+  , _resKolmogorov  :: Maybe ResultadoPrueba
   } deriving (Show, Eq)
 
 -- El Estado principal del analizador
@@ -63,7 +65,7 @@ analizadorInicial = AnalizadorModel
   , _intervalosChi   = Nothing
   , _inputIntervalos = InputValidado "" Nothing -- Vacío por defecto
   
-  , _resultados      = ResultadosMultiples Nothing Nothing Nothing
+  , _resultados      = ResultadosMultiples Nothing Nothing Nothing Nothing
   }
 
 -- ==========================================
@@ -128,10 +130,14 @@ updateAnalizador = \case
         (calcC, critC, pasaC) = pruebaChiCuadrada alpha k datosUnboxed
         resC = Resultado calcC critC pasaC
         
+        (calcK, critK, pasaK) = pruebaKolmogorovSmirnov alpha datosUnboxed
+        resK = Resultado calcK critK pasaK
+        
         nuevosResultados = ResultadosMultiples 
           { _resMedias      = Just resM
           , _resVarianza    = Just resV
           , _resChiCuadrada = Just resC
+          , _resKolmogorov  = Just resK
           }
     in modelo { _resultados = nuevosResultados }
 
@@ -167,6 +173,7 @@ viewAnalizador modelo = div_ [  ]
       [ vistaResultado "Prueba de Medias" (_resMedias (_resultados modelo))
       , vistaResultado "Prueba de Varianza" (_resVarianza (_resultados modelo))
       , vistaResultado "Prueba Chi-Cuadrada" (_resChiCuadrada (_resultados modelo))
+      , vistaResultado "Prueba Kolmogorov-Smirnov" (_resKolmogorov (_resultados modelo))
       ]
   ]
 
@@ -176,10 +183,13 @@ vistaResultado titulo Nothing =
   div_ [  ] [ text (titulo <> ": Esperando datos...") ]
 vistaResultado titulo (Just res) = 
   let mensaje    = if _pasaPrueba res then "Aprobado" else "Reprobado"
+      esKS       = "Kolmogorov" `isInfixOf` fromMisoString titulo
+      lblCritico :: String
+      lblCritico = if esKS then "P-Valor: " else "Valor Crítico: "
   in div_ [ ]
        [ strong_ [] [ text titulo ]
        , p_ [] [ text ("Estadístico: " <> ms (show (_estadisticoCalculado res))) ]
-       , p_ [] [ text ("Valor Crítico: " <> ms (show (_valorTeorico res))) ]
+       , p_ [] [ text (ms lblCritico <> ms (show (_valorTeorico res))) ]
        , p_ [] [ text mensaje ]
        ]
 
