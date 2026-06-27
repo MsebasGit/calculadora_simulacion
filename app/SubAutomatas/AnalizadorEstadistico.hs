@@ -6,9 +6,11 @@ import Miso
 import Miso.Html
 import Miso.Lens
 import Miso.Html.Property (class_)
+import qualified Miso.Mathml as M
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as U
 import Text.Read (readMaybe)
+import Text.Printf (printf)
 import Data.List (isInfixOf)
 import Funciones.Estadisticas 
 
@@ -151,6 +153,62 @@ updateAnalizador = \case
 -- 6. LA VISTA (View)
 -- ==========================================
 
+-- Fórmulas MathML para cada prueba
+formulaMedias :: View model action
+formulaMedias = M.math_ []
+  [ M.msub_ [] [ M.mi_ [] [text "Z"], M.mn_ [] [text "0"] ]
+  , M.mo_ [] [text "="]
+  , M.mfrac_ []
+      [ M.mrow_ []
+          [ M.mo_ [] [text "|"], M.mover_ [] [ M.mi_ [] [text "x"], M.mo_ [] [text "¯"] ], M.mo_ [] [text "−"], M.mn_ [] [text "0.5"], M.mo_ [] [text "|"] ]
+      , M.mfrac_ []
+          [ M.mn_ [] [text "1"]
+          , M.msqrt_ [] [ M.mrow_ [] [ M.mn_ [] [text "12"], M.mi_ [] [text "n"] ] ]
+          ]
+      ]
+  ]
+
+formulaVarianza :: View model action
+formulaVarianza = M.math_ []
+  [ M.msubsup_ [] [ M.mi_ [] [text "χ"], M.mn_ [] [text "0"], M.mn_ [] [text "2"] ]
+  , M.mo_ [] [text "="]
+  , M.mrow_ []
+      [ M.mn_ [] [text "12"], M.mo_ [] [text "·"], M.mo_ [] [text "("], M.mi_ [] [text "n"], M.mo_ [] [text "−"], M.mn_ [] [text "1"], M.mo_ [] [text ")"], M.mo_ [] [text "·"], M.msup_ [] [ M.mi_ [] [text "S"], M.mn_ [] [text "2"] ] ]
+  ]
+
+formulaChiCuadrada :: View model action
+formulaChiCuadrada = M.math_ []
+  [ M.msubsup_ [] [ M.mi_ [] [text "χ"], M.mn_ [] [text "0"], M.mn_ [] [text "2"] ]
+  , M.mo_ [] [text "="]
+  , M.msubsup_ [] [ M.mo_ [] [text "∑"], M.mrow_ [] [ M.mi_ [] [text "i"], M.mo_ [] [text "="], M.mn_ [] [text "1"] ], M.mi_ [] [text "k"] ]
+  , M.mfrac_ []
+      [ M.msup_ []
+          [ M.mrow_ [] [ M.mo_ [] [text "("], M.msub_ [] [ M.mi_ [] [text "O"], M.mi_ [] [text "i"] ], M.mo_ [] [text "−"], M.msub_ [] [ M.mi_ [] [text "E"], M.mi_ [] [text "i"] ], M.mo_ [] [text ")"] ]
+          , M.mn_ [] [text "2"]
+          ]
+      , M.msub_ [] [ M.mi_ [] [text "E"], M.mi_ [] [text "i"] ]
+      ]
+  ]
+
+formulaKolmogorovSmirnov :: View model action
+formulaKolmogorovSmirnov = M.math_ []
+  [ M.mi_ [] [text "D"]
+  , M.mo_ [] [text "="]
+  , M.mrow_ []
+      [ M.mi_ [] [text "max"], M.mo_ [] [text "|"], M.msub_ [] [ M.mi_ [] [text "F"], M.mi_ [] [text "n"] ], M.mo_ [] [text "("], M.mi_ [] [text "x"], M.mo_ [] [text ")"], M.mo_ [] [text "−"], M.mi_ [] [text "F"], M.mo_ [] [text "("], M.mi_ [] [text "x"], M.mo_ [] [text ")"], M.mo_ [] [text "|"] ]
+  ]
+
+formulaCorridas :: View model action
+formulaCorridas = M.math_ []
+  [ M.mi_ [] [text "Z"]
+  , M.mo_ [] [text "="]
+  , M.mfrac_ []
+      [ M.mrow_ []
+          [ M.msub_ [] [ M.mi_ [] [text "C"], M.mn_ [] [text "0"] ], M.mo_ [] [text "−"], M.msub_ [] [ M.mi_ [] [text "μ"], M.mi_ [] [text "C"] ] ]
+      , M.msub_ [] [ M.mi_ [] [text "σ"], M.mi_ [] [text "C"] ]
+      ]
+  ]
+
 viewAnalizador :: AnalizadorModel -> View model AnalizadorAction
 viewAnalizador modelo = div_ [  ]
   [ h2_ [] [ text "Análisis Estadístico" ]
@@ -171,8 +229,7 @@ viewAnalizador modelo = div_ [  ]
           ]
       ]
 
-  -- El botón de ejecución vendrá desde fuera (el GlobalUpdate inyectará la acción)
-  -- Pero mostramos los resultados aquí
+  -- Resultados en cuadrícula premium
   , hr_ []
   , h3_ [] [ text "Resultados" ]
   , div_ [ class_ "results-container" ]
@@ -180,10 +237,26 @@ viewAnalizador modelo = div_ [  ]
         div_ [ class_ "results-section" ]
           [ h4_ [] [ text "Pruebas de Uniformidad" ]
           , div_ [ class_ "results-grid" ]
-              [ vistaResultado "Prueba de Medias" (_resMedias (_resultados modelo))
-              , vistaResultado "Prueba de Varianza" (_resVarianza (_resultados modelo))
-              , vistaResultado "Prueba Chi-Cuadrada" (_resChiCuadrada (_resultados modelo))
-              , vistaResultado "Prueba Kolmogorov-Smirnov" (_resKolmogorov (_resultados modelo))
+              [ vistaResultado 
+                  "Prueba de Medias" 
+                  "Compara la media muestral obtenida con el valor esperado de 0.5 bajo uniformidad." 
+                  formulaMedias 
+                  (_resMedias (_resultados modelo))
+              , vistaResultado 
+                  "Prueba de Varianza" 
+                  "Compara la varianza muestral frente al valor esperado teórico de 1/12 (~0.0833)." 
+                  formulaVarianza 
+                  (_resVarianza (_resultados modelo))
+              , vistaResultado 
+                  "Prueba Chi-Cuadrada" 
+                  "Compara las frecuencias observadas en sub-intervalos con las frecuencias uniformes esperadas." 
+                  formulaChiCuadrada 
+                  (_resChiCuadrada (_resultados modelo))
+              , vistaResultado 
+                  "Prueba Kolmogorov-Smirnov" 
+                  "Evalúa la máxima desviación absoluta entre la distribución empírica y la teórica continua." 
+                  formulaKolmogorovSmirnov 
+                  (_resKolmogorov (_resultados modelo))
               ]
           ]
       , hr_ []
@@ -191,26 +264,50 @@ viewAnalizador modelo = div_ [  ]
       , div_ [ class_ "results-section" ]
           [ h4_ [] [ text "Pruebas de Independencia" ]
           , div_ [ class_ "results-grid" ]
-              [ vistaResultado "Prueba de Corridas (Arriba/Abajo)" (_resCorridas (_resultados modelo))
+              [ vistaResultado 
+                  "Prueba de Corridas" 
+                  "Cuenta la cantidad de rachas de crecimiento/decrecimiento para evaluar la independencia secuencial." 
+                  formulaCorridas 
+                  (_resCorridas (_resultados modelo))
               ]
           ]
       ]
   ]
 
 -- Función auxiliar (UI Pura) para dibujar las tarjetas de resultados
-vistaResultado :: MisoString -> Maybe ResultadoPrueba -> View model action
-vistaResultado titulo Nothing = 
-  div_ [  ] [ text (titulo <> ": Esperando datos...") ]
-vistaResultado titulo (Just res) = 
-  let mensaje    = if _pasaPrueba res then "Aprobado" else "Reprobado"
+vistaResultado :: MisoString -> MisoString -> View model action -> Maybe ResultadoPrueba -> View model action
+vistaResultado titulo significado formula Nothing = 
+  div_ [ class_ "result-card" ]
+    [ div_ [ class_ "result-header" ]
+        [ h5_ [ class_ "result-title" ] [ text titulo ] ]
+    , p_ [ class_ "result-description" ] [ text significado ]
+    , div_ [ class_ "result-formula" ] [ formula ]
+    , div_ [ class_ "result-stats" ] [ text "Esperando datos..." ]
+    ]
+vistaResultado titulo significado formula (Just res) = 
+  let pasa       = _pasaPrueba res
+      mensaje :: String
+      mensaje    = if pasa then "Aprobado" else "Reprobado"
+      badgeClass :: String
+      badgeClass = if pasa then "result-badge badge-pass" else "result-badge badge-fail"
       esKS       = "Kolmogorov" `isInfixOf` fromMisoString titulo
-      lblCritico :: String
       lblCritico = if esKS then "P-Valor: " else "Valor Crítico: "
-  in div_ [ ]
-       [ strong_ [] [ text titulo ]
-       , p_ [] [ text ("Estadístico: " <> ms (show (_estadisticoCalculado res))) ]
-       , p_ [] [ text (ms lblCritico <> ms (show (_valorTeorico res))) ]
-       , p_ [] [ text mensaje ]
+      
+      calcStr = printf "%.4f" (_estadisticoCalculado res) :: String
+      teorStr = printf "%.4f" (_valorTeorico res) :: String
+      lblCriticoStr :: String
+      lblCriticoStr = lblCritico
+  in div_ [ class_ "result-card" ]
+       [ div_ [ class_ "result-header" ]
+           [ h5_ [ class_ "result-title" ] [ text titulo ]
+           , span_ [ class_ (ms badgeClass) ] [ text (ms mensaje) ]
+           ]
+       , p_ [ class_ "result-description" ] [ text significado ]
+       , div_ [ class_ "result-formula" ] [ formula ]
+       , div_ [ class_ "result-stats" ]
+           [ div_ [] [ text ("Estadístico: " <> ms calcStr) ]
+           , div_ [] [ text (ms lblCriticoStr <> ms teorStr) ]
+           ]
        ]
 
 -- Helper para limpiar errores al guardar exitosamente
