@@ -624,3 +624,51 @@ td:nth-child(2), td:nth-child(3), td:nth-child(4) {
 .verdict-fail {
   color: #b91c1c;
 }
+
+/* Visual Dashboard Bars */
+.db-bar-container {
+  margin: 1.5rem 0 0.8rem 0;
+  width: 100%;
+}
+
+.db-bar-track {
+  height: 10px;
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+  position: relative;
+  overflow: visible;
+}
+
+.db-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.3s ease;
+}
+
+.db-bar-fill-pass {
+  background-color: #22c55e;
+}
+
+.db-bar-fill-fail {
+  background-color: #ef4444;
+}
+
+.db-marker {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: 18px;
+  background-color: #dc2626;
+  box-shadow: 0 0 4px rgba(220, 38, 38, 0.6);
+  z-index: 10;
+}
+
+.db-marker-label {
+  position: absolute;
+  top: -18px;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #dc2626;
+  white-space: nowrap;
+}

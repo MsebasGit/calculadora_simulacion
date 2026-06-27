@@ -238,21 +238,25 @@ viewAnalizador modelo = div_ [  ]
           [ h4_ [] [ text "Pruebas de Uniformidad" ]
           , div_ [ class_ "results-grid" ]
               [ vistaResultado 
+                  alpha
                   "Prueba de Medias" 
                   "Compara la media muestral obtenida con el valor esperado de 0.5 bajo uniformidad." 
                   formulaMedias 
                   (_resMedias (_resultados modelo))
               , vistaResultado 
+                  alpha
                   "Prueba de Varianza" 
                   "Compara la varianza muestral frente al valor esperado teórico de 1/12 (~0.0833)." 
                   formulaVarianza 
                   (_resVarianza (_resultados modelo))
               , vistaResultado 
+                  alpha
                   "Prueba Chi-Cuadrada" 
                   "Compara las frecuencias observadas en sub-intervalos con las frecuencias uniformes esperadas." 
                   formulaChiCuadrada 
                   (_resChiCuadrada (_resultados modelo))
               , vistaResultado 
+                  alpha
                   "Prueba Kolmogorov-Smirnov" 
                   "Evalúa la máxima desviación absoluta entre la distribución empírica y la teórica continua." 
                   formulaKolmogorovSmirnov 
@@ -265,6 +269,7 @@ viewAnalizador modelo = div_ [  ]
           [ h4_ [] [ text "Pruebas de Independencia" ]
           , div_ [ class_ "results-grid" ]
               [ vistaResultado 
+                  alpha
                   "Prueba de Corridas" 
                   "Cuenta la cantidad de rachas de crecimiento/decrecimiento para evaluar la independencia secuencial." 
                   formulaCorridas 
@@ -273,10 +278,40 @@ viewAnalizador modelo = div_ [  ]
           ]
       ]
   ]
+  where
+    alpha = _nivelConfianza modelo
 
--- Función auxiliar (UI Pura) para dibujar las tarjetas de resultados
-vistaResultado :: MisoString -> MisoString -> View model action -> Maybe ResultadoPrueba -> View model action
-vistaResultado titulo significado formula Nothing = 
+-- Función auxiliar para dibujar una barra de comparación visual (Tu Resultado vs Línea Roja)
+renderBarra :: Double -> Double -> Bool -> Bool -> View model action
+renderBarra calc valTeor pasa esKS =
+  let -- Normalización respecto al máximo
+      maxVal = max (1.2 * calc) (1.2 * valTeor)
+      -- Evitar división por cero
+      safeMax = if maxVal <= 0 then 1.0 else maxVal
+      
+      calcPct = (calc / safeMax) * 100
+      teorPct = (valTeor / safeMax) * 100
+      
+      -- Asegurar rango [0, 100]
+      calcPctClamped = max 0.0 (min 100.0 calcPct)
+      teorPctClamped = max 0.0 (min 100.0 teorPct)
+      
+      fillClass :: String
+      fillClass = if pasa then "db-bar-fill db-bar-fill-pass" else "db-bar-fill db-bar-fill-fail"
+      
+      fillStyle = "width: " <> show calcPctClamped <> "%"
+      markerStyle = "left: " <> show teorPctClamped <> "%"
+  in div_ [ class_ "db-bar-container" ]
+       [ div_ [ class_ "db-bar-track" ]
+           [ div_ [ class_ (ms fillClass), textProp "style" (ms fillStyle) ] []
+           , div_ [ class_ "db-marker", textProp "style" (ms markerStyle) ] 
+               [ span_ [ class_ "db-marker-label" ] [ text "Línea Roja" ] ]
+           ]
+       ]
+
+-- Función auxiliar (UI Pura) para dibujar las tarjetas de resultados en formato Dashboard
+vistaResultado :: Double -> MisoString -> MisoString -> View model action -> Maybe ResultadoPrueba -> View model action
+vistaResultado _alpha titulo significado formula Nothing = 
   div_ [ class_ "result-card" ]
     [ div_ [ class_ "result-header" ]
         [ h5_ [ class_ "result-title" ] [ text titulo ] ]
@@ -284,7 +319,7 @@ vistaResultado titulo significado formula Nothing =
     , div_ [ class_ "result-formula" ] [ formula ]
     , div_ [ class_ "result-stats" ] [ text "Esperando datos..." ]
     ]
-vistaResultado titulo significado formula (Just res) = 
+vistaResultado alpha titulo significado formula (Just res) = 
   let pasa        = _pasaPrueba res
       cardClass :: String
       cardClass   = if pasa then "result-card card-pass" else "result-card card-fail"
@@ -299,11 +334,18 @@ vistaResultado titulo significado formula (Just res) =
       
       calcStr = printf "%.3f" (_estadisticoCalculado res) :: String
       teorStr = printf "%.3f" (_valorTeorico res) :: String
+      
+      -- Para el gráfico de barras:
+      -- En Kolmogorov-Smirnov, comparamos el P-Valor (tu resultado) contra Alpha (límite crítico, línea roja)
+      -- En el resto, comparamos el estadístico calculado (tu resultado) contra el valor crítico teórico (límite crítico, línea roja)
+      calcValBar = if esKS then _valorTeorico res else _estadisticoCalculado res
+      teorValBar = if esKS then alpha else _valorTeorico res
   in div_ [ class_ (ms cardClass) ]
        [ div_ [ class_ "result-header" ]
            [ h5_ [ class_ "result-title" ] [ text titulo ] ]
        , p_ [ class_ "result-description" ] [ text significado ]
        , div_ [ class_ "result-formula" ] [ formula ]
+       , renderBarra calcValBar teorValBar pasa esKS
        , div_ [ class_ "dashboard-stat-row" ]
            [ span_ [ class_ "dashboard-stat-label" ] [ text "Tu Resultado:" ]
            , span_ [ class_ "dashboard-stat-value" ] [ text (ms calcStr) ]
