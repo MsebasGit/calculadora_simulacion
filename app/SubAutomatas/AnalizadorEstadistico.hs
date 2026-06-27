@@ -283,7 +283,7 @@ viewAnalizador modelo = div_ [  ]
 
 -- Función auxiliar para dibujar una barra de comparación visual (Tu Resultado vs Línea Roja)
 renderBarra :: Double -> Double -> Bool -> Bool -> View model action
-renderBarra calc valTeor pasa esKS =
+renderBarra calc valTeor pasa _esKS =
   let -- Normalización respecto al máximo
       maxVal = max (1.2 * calc) (1.2 * valTeor)
       -- Evitar división por cero
@@ -319,7 +319,7 @@ vistaResultado _alpha titulo significado formula Nothing =
     , div_ [ class_ "result-formula" ] [ formula ]
     , div_ [ class_ "result-stats" ] [ text "Esperando datos..." ]
     ]
-vistaResultado alpha titulo significado formula (Just res) = 
+vistaResultado _alpha titulo significado formula (Just res) = 
   let pasa        = _pasaPrueba res
       cardClass :: String
       cardClass   = if pasa then "result-card card-pass" else "result-card card-fail"
@@ -330,22 +330,16 @@ vistaResultado alpha titulo significado formula (Just res) =
       
       esKS        = "Kolmogorov" `isInfixOf` fromMisoString titulo
       lblCritico :: String
-      lblCritico  = if esKS then "P-Valor (Línea Roja):" else "Línea Roja:"
+      lblCritico  = if esKS then "Línea Roja (Alpha):" else "Línea Roja:"
       
       calcStr = printf "%.3f" (_estadisticoCalculado res) :: String
       teorStr = printf "%.3f" (_valorTeorico res) :: String
-      
-      -- Para el gráfico de barras:
-      -- En Kolmogorov-Smirnov, comparamos el P-Valor (tu resultado) contra Alpha (límite crítico, línea roja)
-      -- En el resto, comparamos el estadístico calculado (tu resultado) contra el valor crítico teórico (límite crítico, línea roja)
-      calcValBar = if esKS then _valorTeorico res else _estadisticoCalculado res
-      teorValBar = if esKS then alpha else _valorTeorico res
   in div_ [ class_ (ms cardClass) ]
        [ div_ [ class_ "result-header" ]
            [ h5_ [ class_ "result-title" ] [ text titulo ] ]
        , p_ [ class_ "result-description" ] [ text significado ]
        , div_ [ class_ "result-formula" ] [ formula ]
-       , renderBarra calcValBar teorValBar pasa esKS
+       , renderBarra (_estadisticoCalculado res) (_valorTeorico res) pasa esKS
        , div_ [ class_ "dashboard-stat-row" ]
            [ span_ [ class_ "dashboard-stat-label" ] [ text "Tu Resultado:" ]
            , span_ [ class_ "dashboard-stat-value" ] [ text (ms calcStr) ]

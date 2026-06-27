@@ -74,12 +74,11 @@ pruebaChiCuadrada alpha m k_numeros =
 pruebaKolmogorovSmirnov :: Double -> U.Vector Double -> (Double, Double, Bool)
 pruebaKolmogorovSmirnov alpha numeros =
     case kolmogorovSmirnovTest (uniformDistr 0 1) numeros of
-        Nothing -> (0.0, 1.0, False)
+        Nothing -> (0.0, alpha, False)
         Just t   ->
             let pVal = pValue (testSignificance t)
-                dStat = testStatistics t
                 pasaPrueba = pVal >= alpha
-            in (dStat, pVal, pasaPrueba)  
+            in (pVal, alpha, pasaPrueba)  
 
 -- | 5. PRUEBA DE CORRIDAS ARRIBA Y ABAJO (Independencia)
 -- Retorna: (Z_calculado, Z_critico, PasaPrueba)
