@@ -32,6 +32,7 @@ import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import qualified UI.Math as UM
 import SubAutomatas.AnalizadorEstadistico
+import Text.Printf (printf)
 
 
 -- | Modelo local para el método Congruencial Lineal
@@ -236,7 +237,7 @@ viewModel modelo = H.div_ []
   , case _parametrosOriginales modelo of
       Nothing -> H.div_ [] []
       Just _  -> H.div_ []
-         [ tablaHistorial (_historial modelo)
+         [ tablaHistorial (_m modelo) (_historial modelo)
          , if V.null (_historial modelo)
              then H.div_ [] []
              else H.div_ [ class_ "card fade-in" ]
@@ -297,13 +298,14 @@ controlesSimulacion False modelo = H.div_ []
   , H.button_ [ onClick Reiniciar ] [ text "Reiniciar / Cambiar parámetros" ]
   ]
 
-tablaHistorial :: V.Vector Int -> View model CongruencialAction
-tablaHistorial historialVec = 
+tablaHistorial :: Int -> V.Vector Int -> View model CongruencialAction
+tablaHistorial modulo' historialVec = 
   H.table_ []
     [ H.thead_ []
       [ H.tr_ []
         [ H.th_ [] [ UM.indexn ]
         , H.th_ [] [ UM.xn ]
+        , H.th_ [] [ UM.rn ]
         ]
       ]
     , H.tbody_ [] filasHTML
@@ -314,6 +316,7 @@ tablaHistorial historialVec =
     filasHTML = [ H.tr_ [] 
                     [ H.td_ [] [ text (ms (show iteracion)) ]
                     , H.td_ [] [ text (ms (show valor)) ] 
+                    , H.td_ [] [ text (ms (printf "%.4f" (fromIntegral valor / fromIntegral modulo' :: Double) :: String)) ]
                     ] 
                 | (iteracion, valor) <- listaNumerada 
                 ]

@@ -16,6 +16,7 @@ import Funciones.Estadisticas
 
 -- Importamos nuestro sub-autómata técnico
 import SubAutomatas.InputValidado 
+import qualified SubAutomatas.Distribuciones as D
 
 
 -- ==========================================
@@ -45,6 +46,7 @@ data AnalizadorModel = AnalizadorModel
   , _inputIntervalos :: InputValidado -- Para que el usuario escriba
   
   , _resultados      :: ResultadosMultiples
+  , _distribuciones  :: D.DistribucionModel
   } deriving (Show, Eq)
 
 -- ==========================================
@@ -56,6 +58,9 @@ inputConfianza = lens _inputConfianza $ \m x -> m { _inputConfianza = x }
 
 inputIntervalos :: Lens AnalizadorModel InputValidado
 inputIntervalos = lens _inputIntervalos $ \m x -> m { _inputIntervalos = x }
+
+distribuciones :: Lens AnalizadorModel D.DistribucionModel
+distribuciones = lens _distribuciones $ \m x -> m { _distribuciones = x }
 
 -- ==========================================
 -- 3. ESTADO INICIAL (q0)
@@ -70,6 +75,7 @@ analizadorInicial = AnalizadorModel
   , _inputIntervalos = InputValidado "" Nothing -- Vacío por defecto
   
   , _resultados      = ResultadosMultiples Nothing Nothing Nothing Nothing Nothing
+  , _distribuciones  = D.distribucionesInicial
   }
 
 -- ==========================================
@@ -84,6 +90,7 @@ data AnalizadorAction
   | FijarIntervalos
   
   | EjecutarPruebas (V.Vector Double)
+  | AccionDistribuciones D.DistribucionAction
   deriving (Show, Eq)
 
 -- ==========================================
@@ -147,7 +154,11 @@ updateAnalizador = \case
           , _resKolmogorov  = Just resK
           , _resCorridas    = Just resR
           }
-    in modelo { _resultados = nuevosResultados }
+        distribucionesActualizadas = D.establecerDatosRi datos (_distribuciones modelo)
+    in modelo { _resultados = nuevosResultados, _distribuciones = distribucionesActualizadas }
+
+  AccionDistribuciones act -> \modelo ->
+    modelo { _distribuciones = D.updateDistribuciones act (_distribuciones modelo) }
 
 -- ==========================================
 -- 6. LA VISTA (View)
@@ -208,6 +219,13 @@ formulaCorridas = M.math_ []
       , M.msub_ [] [ M.mi_ [] [text "σ"], M.mi_ [] [text "C"] ]
       ]
   ]
+
+todasLasPruebasPasaron :: ResultadosMultiples -> Bool
+todasLasPruebasPasaron res =
+  case (_resMedias res, _resVarianza res, _resChiCuadrada res, _resKolmogorov res, _resCorridas res) of
+    (Just rm, Just rv, Just rc, Just rk, Just rco) ->
+      _pasaPrueba rm && _pasaPrueba rv && _pasaPrueba rc && _pasaPrueba rk && _pasaPrueba rco
+    _ -> False
 
 viewAnalizador :: AnalizadorModel -> View model AnalizadorAction
 viewAnalizador modelo = div_ [  ]
@@ -277,6 +295,9 @@ viewAnalizador modelo = div_ [  ]
               ]
           ]
       ]
+  , if todasLasPruebasPasaron (_resultados modelo)
+    then fmap AccionDistribuciones (D.viewDistribuciones (_distribuciones modelo))
+    else div_ [] []
   ]
   where
     alpha = _nivelConfianza modelo
@@ -329,6 +350,8 @@ vistaResultado _alpha titulo significado formula (Just res) =
       verdictMsg   = if pasa then "Aprobado" else "Reprobado"
       
       esKS        = "Kolmogorov" `isInfixOf` fromMisoString titulo
+      lblResultado :: String
+      lblResultado = if esKS then "Tu Resultado (p-valor):" else "Tu Resultado:"
       lblCritico :: String
       lblCritico  = if esKS then "Línea Roja (Alpha):" else "Línea Roja:"
       
@@ -339,9 +362,12 @@ vistaResultado _alpha titulo significado formula (Just res) =
            [ h5_ [ class_ "result-title" ] [ text titulo ] ]
        , p_ [ class_ "result-description" ] [ text significado ]
        , div_ [ class_ "result-formula" ] [ formula ]
+       , if esKS
+         then div_ [ class_ "result-formula-sub" ] [ text "(La prueba se evalúa calculando el p-valor derivado de D)" ]
+         else div_ [] []
        , renderBarra (_estadisticoCalculado res) (_valorTeorico res) pasa esKS
        , div_ [ class_ "dashboard-stat-row" ]
-           [ span_ [ class_ "dashboard-stat-label" ] [ text "Tu Resultado:" ]
+           [ span_ [ class_ "dashboard-stat-label" ] [ text (ms lblResultado) ]
            , span_ [ class_ "dashboard-stat-value" ] [ text (ms calcStr) ]
            ]
        , div_ [ class_ "dashboard-stat-row" ]

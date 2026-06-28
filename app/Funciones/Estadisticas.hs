@@ -91,7 +91,7 @@ pruebaDeCorridas alpha numeros =
         secuenciaS = U.map (\(x, y) -> if y > x then 1 else 0 :: Int) pares
         
         -- Paso 2: Contar los cambios de signo para hallar el total de corridas (C_0)
-        cambios = U.filter (\(s1, s2) -> s1 /= s2) (U.zip secuenciaS (U.tail secuenciaS))
+        cambios = U.filter (uncurry (/=)) (U.zip secuenciaS (U.tail secuenciaS))
         c_0 = fromIntegral (1 + U.length cambios) :: Double
         
         -- Paso 3: Media y Varianza esperadas bajo la hipótesis de independencia

@@ -672,3 +672,290 @@ td:nth-child(2), td:nth-child(3), td:nth-child(4) {
   color: #dc2626;
   white-space: nowrap;
 }
+
+.result-formula-sub {
+  font-size: 0.75rem;
+  color: var(--subtext1);
+  text-align: center;
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+
+/* --- Distribuciones SubAutomata CSS --- */
+
+.distribuciones-container {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  text-align: left;
+}
+
+.distribuciones-header {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+  border-left: 3px solid var(--green);
+  padding-left: 0.5rem;
+}
+
+.distribuciones-intro {
+  font-size: 0.9rem;
+  color: var(--subtext1);
+  margin-bottom: 1.5rem;
+}
+
+.dist-setup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: end;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .dist-setup-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.selector-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.select-field {
+  width: 100%;
+}
+
+.dist-params-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.param-control {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.param-control label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--subtext0);
+}
+
+.calc-btn-container {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btn-calc-dist {
+  background-color: var(--green) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.btn-calc-dist:hover {
+  background-color: #388e3c !important;
+}
+
+.charts-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.original-chart-box {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.no-charts-box {
+  background: var(--bg-primary);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  text-align: center;
+  color: var(--subtext0);
+  font-size: 0.9rem;
+}
+
+.calculated-charts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dist-result-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dist-result-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+}
+
+.dist-card-title {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.dist-result-card-body {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .dist-result-card-body {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.muestra-valores-box {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.muestra-valores-lbl {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--subtext1);
+}
+
+.muestra-valores-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+
+.muestra-valores-tbl td {
+  padding: 0.25rem 0.4rem;
+}
+
+.text-muted {
+  color: var(--subtext0);
+}
+
+.text-arrow {
+  color: var(--overlay1);
+  text-align: center;
+  width: 20px;
+}
+
+.text-highlight {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.btn-danger-small {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.btn-danger-small:hover {
+  background-color: #dc2626;
+}
+
+/* Histogram SVG styling */
+.histogram-chart-wrapper {
+  width: 100%;
+}
+
+.histogram-chart-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--subtext1);
+  text-align: center;
+}
+
+.histogram-svg-container {
+  width: 100%;
+  height: 180px;
+}
+
+.histogram-svg-el {
+  width: 100%;
+  height: 100%;
+}
+
+.histogram-bar {
+  transition: opacity 0.15s ease;
+  cursor: pointer;
+}
+
+.histogram-bar:hover {
+  opacity: 0.85;
+}
+
+.histogram-bar-text {
+  fill: var(--text);
+  font-size: 8px;
+  font-family: var(--font-mono);
+  text-anchor: middle;
+}
+
+.histogram-axis {
+  stroke: var(--subtext0);
+  stroke-dasharray: none;
+  opacity: 0.8;
+}
+
+.histogram-axis-text {
+  fill: var(--subtext1);
+  font-size: 9px;
+  font-family: var(--font-sans);
+}
+
+.histogram-axis-text.text-start {
+  text-anchor: start;
+}
+
+.histogram-axis-text.text-end {
+  text-anchor: end;
+}
+
+.histogram-axis-text.text-center {
+  text-anchor: middle;
+}
