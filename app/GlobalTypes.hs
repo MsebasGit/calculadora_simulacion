@@ -14,6 +14,7 @@ module GlobalTypes
   , activeTab
   , SeccionPrincipal (..)
   , seccionActiva
+  , ruleta
   ) where
 
 import Miso.Lens
@@ -24,6 +25,7 @@ import qualified Automatas.PruebasEstadisticas as PE
 import qualified Automatas.MultiplicadorConstante as MC
 import qualified Automatas.ProductosMedios as PM
 import qualified Automatas.MersenneTwister as MT
+import qualified Automatas.Ruleta as R
 
 -- | Secciones principales de la aplicación
 data SeccionPrincipal
@@ -42,6 +44,7 @@ data Model = Model
   , _multiplicadorConstante :: MC.MultConstanteModel
   , _productosMedios        :: PM.ProductosMediosModel
   , _mersenneTwister        :: MT.MersenneTwisterModel
+  , _ruleta                 :: R.Model
   , _activeTab              :: Tab
   } deriving (Show, Eq)
 
@@ -65,6 +68,7 @@ data Action
   | AccionMultiplicadorConstante MC.MultConstanteAction
   | AccionProductosMedios PM.ProductosMediosAction
   | AccionMersenneTwister MT.MersenneTwisterAction
+  | AccionRuleta R.Action
   | CambiarTab Tab
   | CambiarSeccion SeccionPrincipal
   deriving (Show, Eq)
@@ -97,6 +101,9 @@ activeTab = lens _activeTab $ \record x -> record {_activeTab = x}
 seccionActiva :: Lens Model SeccionPrincipal
 seccionActiva = lens _seccionActiva $ \record x -> record {_seccionActiva = x}
 
+ruleta :: Lens Model R.Model
+ruleta = lens _ruleta $ \record x -> record {_ruleta = x}
+
 -- | Modelo inicial global
 modeloInicial :: Model
 modeloInicial = Model
@@ -108,5 +115,6 @@ modeloInicial = Model
   , _multiplicadorConstante = MC.xcero
   , _productosMedios        = PM.xcero
   , _mersenneTwister        = MT.xcero
+  , _ruleta                 = R.initialModel
   , _activeTab              = TabCuadradosMedios
   }

@@ -82,7 +82,8 @@ executable calculadora-simulacion
                    UI.Table,
                    GlobalTypes,
                    GlobalUpdate,
-                   GlobalView
+                   GlobalView,
+                   Automatas.Ruleta
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -100,6 +101,9 @@ executable calculadora-simulacion
 
     if !arch(wasm32)
         build-depends: diagrams-cairo
+
+    if arch(wasm32)
+        build-depends: ghc-experimental
 
     -- Directories containing source files.
     hs-source-dirs:   app
