@@ -2,6 +2,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
+html {
+  font-size: 18px; /* Aumenta el tamaño base de la letra para que la fuente pixelada Jersey 10 sea más legible */
+}
+
 :root {
   /* Catppuccin Frappé Palette */
   --rosewater: #f2d5cf;
@@ -1052,7 +1056,7 @@ header {
 }
 
 h1 {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-sans);
   font-size: 2.25rem;
   font-weight: 700;
   background: linear-gradient(135deg, #ffffff 40%, var(--accent-mauve) 100%);
@@ -1102,7 +1106,7 @@ h1 {
 }
 
 .stat-label {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-sans);
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1691,7 +1695,7 @@ footer {
 }
 
 .modal-title {
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-sans);
   color: #a6e3a1; /* green */
   font-size: 2.2rem;
   font-weight: 800;
@@ -1788,7 +1792,7 @@ footer {
 
 .start-title {
   color: var(--accent-mauve);
-  font-family: 'Cinzel', serif;
+  font-family: var(--font-sans);
   background: linear-gradient(135deg, #ffffff 40%, var(--accent-mauve) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
