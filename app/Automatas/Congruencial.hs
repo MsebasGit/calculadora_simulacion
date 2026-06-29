@@ -16,6 +16,7 @@ module Automatas.Congruencial
   , inputIteraciones
   , parametrosOriginales
   , historial
+  , analizador
   ) where
 
 import Miso
@@ -30,6 +31,8 @@ import Text.Read (readMaybe)
 import qualified Data.Set as S
 import SubAutomatas.InputValidado
 import qualified UI.Math as UM
+import SubAutomatas.AnalizadorEstadistico
+import Text.Printf (printf)
 
 
 -- | Modelo local para el método Congruencial Lineal
@@ -45,6 +48,7 @@ data CongruencialModel = CongruencialModel
   , _c                    :: Int
   , _m                    :: Int
   , _historial            :: V.Vector Int
+  , _analizador           :: AnalizadorModel
   } deriving (Show, Eq)
 
 makeLenses ''CongruencialModel
@@ -61,6 +65,7 @@ data CongruencialAction
   | IterarNUsuario
   | IterarN Int
   | Reiniciar
+  | AccionAnalizador AnalizadorAction
   deriving (Show, Eq)
 
 -- | Estado inicial
@@ -71,7 +76,7 @@ xcero = CongruencialModel
   (InputValidado "" Nothing)
   (InputValidado "" Nothing)
   (InputValidado "10" Nothing)
-  Nothing 0 0 0 0 V.empty
+  Nothing 0 0 0 0 V.empty analizadorInicial
 
 -- | Actualización de estado local (pure update)
 updateModel :: CongruencialAction -> CongruencialModel -> CongruencialModel
@@ -187,6 +192,9 @@ updateModel action modelo = case action of
       , _historial = _historial modelo `V.snoc` nuevoValor
       }
 
+  AccionAnalizador subAct ->
+    analizador %~ updateAnalizador subAct $ modelo
+
 -- | Renderizado visual del autómata Congruencial Lineal
 viewModel :: CongruencialModel -> View model CongruencialAction
 viewModel modelo = H.div_ []
@@ -228,7 +236,18 @@ viewModel modelo = H.div_ []
   , H.hr_ []
   , case _parametrosOriginales modelo of
       Nothing -> H.div_ [] []
-      Just _  -> tablaHistorial (_historial modelo)
+      Just _  -> H.div_ []
+         [ tablaHistorial (_m modelo) (_historial modelo)
+         , if V.null (_historial modelo)
+             then H.div_ [] []
+             else H.div_ [ class_ "card fade-in" ]
+               [ H.h3_ [] [ text "Pruebas Estadísticas" ]
+               , H.button_ [ onClick (AccionAnalizador (EjecutarPruebas (V.map (\x -> fromIntegral x / fromIntegral (_m modelo)) (_historial modelo)))), class_ "btn-primary" ]
+                   [ text "Ejecutar Pruebas Estadísticas" ]
+               , H.hr_ []
+               , fmap AccionAnalizador (viewAnalizador (_analizador modelo))
+               ]
+         ]
   ]
 
 panelControles :: CongruencialModel -> View model CongruencialAction
@@ -253,7 +272,7 @@ panelControles modelo = H.div_ []
           , H.div_ [] [ text "Módulo (", UM.constm, text "):" ]
           , viewInputValidado AccionInputModulo (_inputModulo modelo)
           , H.hr_ []
-          , H.button_ [ onClick FijarParametros ]
+          , H.button_ [ onClick FijarParametros, class_ "btn-primary" ]
                       [ text "Fijar Parámetros" ]
           ]
 
@@ -279,13 +298,14 @@ controlesSimulacion False modelo = H.div_ []
   , H.button_ [ onClick Reiniciar ] [ text "Reiniciar / Cambiar parámetros" ]
   ]
 
-tablaHistorial :: V.Vector Int -> View model CongruencialAction
-tablaHistorial historialVec = 
+tablaHistorial :: Int -> V.Vector Int -> View model CongruencialAction
+tablaHistorial modulo' historialVec = 
   H.table_ []
     [ H.thead_ []
       [ H.tr_ []
         [ H.th_ [] [ UM.indexn ]
         , H.th_ [] [ UM.xn ]
+        , H.th_ [] [ UM.rn ]
         ]
       ]
     , H.tbody_ [] filasHTML
@@ -296,6 +316,7 @@ tablaHistorial historialVec =
     filasHTML = [ H.tr_ [] 
                     [ H.td_ [] [ text (ms (show iteracion)) ]
                     , H.td_ [] [ text (ms (show valor)) ] 
+                    , H.td_ [] [ text (ms (printf "%.4f" (fromIntegral valor / fromIntegral modulo' :: Double) :: String)) ]
                     ] 
                 | (iteracion, valor) <- listaNumerada 
                 ]

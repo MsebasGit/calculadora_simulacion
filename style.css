@@ -1,0 +1,817 @@
+@import url('https://fonts.googleapis.com/css2?family=Jersey+10&display=swap');
+
+/*
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+*/
+
+:root {
+    /* Define variables globales reutilizables en todo el documento */
+    --rosewater: #f2d5cf;
+    --flamingo: #eebebe;
+    --pink: #f4b8e4;
+    --mauve: #ca9ee6;
+    --red: #e78284;
+    --maroon: #ea999c;
+    --peach: #ef9f76;
+    --yellow: #e5c890;
+    --green: #a6d189;
+    --teal: #81c8be;
+    --sky: #99d1db;
+    --sapphire: #85c1dc;
+    --blue: #8caaee;
+    --lavender: #babbf1;
+    --text: #c6d0f5;
+    --subtext-1: #b5bfe2;
+    --subtext-0: #a5adce;
+    --overlay-2: #949cbb;
+    --overlay-1: #838ba7;
+    --overlay-0: #737994;
+    --surface-2: #626880;
+    --surface-1: #51576d;
+    --surface-0: #414559;
+    --base: #303446;
+    --mantle: #292c3c;
+    --crust: #232634;
+    --base-color: #303446;
+
+    --color-primario: #1a3c5e;
+    /* Guarda color principal para consistencia visual */
+    --color-secundario: #e8f4f8;
+    /* Define color secundario para fondos o secciones */
+    --color-texto: #c6d0f5;
+    /* Almacena color base para texto legible */
+    --color-acento: #2980b9;
+    /* Define color destacado para elementos importantes */
+
+    /* Mejorado: Fuentes modernas para mayor limpieza */
+    --fuente-principal: 'Jersey 10', sans-serif;
+    /* Establece fuente principal del sitio */
+    --fuente-codigo: 'Fira Code', 'Courier New', monospace;
+    /* Define fuente para mostrar código */
+    --radio-borde: 12px;
+    /* Guarda valor de bordes redondeados reutilizable */
+    --sombra-suave: 0 4px 15px rgba(0, 0, 0, 0.2);
+    /* Define sombra ligera para profundidad visual */
+}
+
+
+
+/* =========================================================
+   RESET Y BASE
+   ========================================================= */
+html {
+    font-size: 135%;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--fuente-principal);
+    /* Usa fuente principal definida anteriormente */
+    color: var(--color-texto);
+    /* Aplica color de texto global */
+    background-color: var(--base-color);
+    /* Establece fondo base para la página */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1 {
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    font-size: 2.5rem;
+    color: var(--green);
+    margin: 40px 0 20px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+h2 {
+    font-size: 2rem;
+    width: 100%;
+    text-align: center;
+    font-weight: 700;
+    color: var(--mauve);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+}
+
+h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--yellow);
+    margin-bottom: 15px;
+}
+
+p {
+    /* Selecciona todos los párrafos del documento */
+    font-size: 1rem;
+    /* Define tamaño base de texto para legibilidad */
+    line-height: 1.6;
+    /* Ajusta interlineado para mejorar lectura */
+    margin-bottom: 10px;
+}
+
+.caja {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+    position: relative;
+    margin: 20px 0;
+    width: 80vw;
+    max-width: 900px;
+    padding: 30px;
+    box-shadow: var(--sombra-suave);
+    background-color: var(--mantle);
+    border: 1px solid var(--surface-0);
+    border-radius: var(--radio-borde);
+    box-sizing: border-box;
+}
+
+.caja div {
+    flex: 1;
+    min-width: 250px;
+    margin-top: 15px;
+    padding: 0 15px;
+    text-align: left;
+    align-content: center;
+}
+
+.caja div>p {
+    text-align: center;
+}
+
+
+
+.caja>img {
+    height: 50%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid var(--mauve);
+    margin: 0 auto 20px auto;
+    display: block;
+    box-shadow: var(--sombra-suave);
+}
+
+/* * * * TABLA DE CALIFICACIONES * * * */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+tbody tr {
+    color: var(--text);
+    transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+    background-color: var(--surface-0);
+}
+
+th {
+    background-color: var(--surface-1);
+    border-bottom: 3px dotted var(--surface-2);
+    color: var(--lavender);
+    padding: 15px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--surface-0);
+    text-align: center;
+}
+
+
+/* * * * FORMULARIO * * * */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 500px;
+    margin: auto
+}
+
+label {
+    font-weight: 600;
+    color: var(--subtext-1);
+    margin-bottom: -5px;
+}
+
+input,
+textarea {
+    padding: 12px 15px;
+    background-color: var(--crust);
+    color: var(--text);
+    border: 1px solid var(--surface-1);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--mauve);
+}
+
+button[type="submit"] {
+    background-color: var(--sapphire);
+    color: var(--crust);
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    font-family: var(--fuente-principal);
+    align-self: center;
+    width: 100%;
+    transition: background-color 0.3s, transform 0.1s;
+    margin-top: 10px;
+}
+
+button[type="submit"]:hover {
+    background-color: var(--blue);
+}
+
+button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+/* =========================================================
+   APUNTES DE SELECTORES (Mantenidos intactos)
+   ========================================================= */
+/* Selectores: */
+
+/* Por etiqueta: afecta a TODOS los párrafos */
+/* Explica que selector aplica a todos los elementos p */
+/* Cierra bloque de estilos para párrafos */
+
+/* Por clase: afecta a cualquier elemento con class="resaltado" */
+/* Cierra bloque de clase resaltado */
+
+/* Por ID: afecta al elemento con id="sobre-mi" (único en la página) */
+/* Explica selector único */
+/* Cierra bloque de ID sobre-mi */
+
+/* === HEADER === */
+
+/* === NAVEGACIÓN === */
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    padding-top: 15px;
+}
+
+nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 6px;
+    background: linear-gradient(to right,
+            var(--rosewater) 0%, var(--rosewater) 11.11%,
+            var(--flamingo) 11.11%, var(--flamingo) 22.22%,
+            var(--pink) 22.22%, var(--pink) 33.33%,
+            var(--mauve) 33.33%, var(--mauve) 44.44%,
+            var(--red) 44.44%, var(--red) 55.55%,
+            var(--maroon) 55.55%, var(--maroon) 66.66%,
+            var(--peach) 66.66%, var(--peach) 77.77%,
+            var(--yellow) 77.77%, var(--yellow) 88.88%,
+            var(--green) 88.88%, var(--green) 100%);
+    border-radius: 3px;
+}
+
+/* Contenedor de la lista (Desktop) */
+nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+
+nav li {
+    background-color: var(--surface-0);
+    border-radius: 4px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo de los enlaces */
+nav a {
+    display: block;
+    padding: 8px 14px;
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-family: var(--fuente-principal);
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    transition: color 0.3s ease;
+}
+
+/* Interacción: Hover (Desktop) */
+nav li:hover {
+    transform: translateY(-2px);
+    background-color: var(--surface-1);
+}
+
+nav a:hover {
+    color: var(--lavender);
+    text-decoration: none;
+}
+
+/* === FOOTER === */
+footer {
+    width: 100%;
+    background-color: var(--crust);
+    color: var(--subtext-0);
+    padding: 25px 20px;
+    margin-top: auto;
+    /* Empuja el footer al fondo de la pantalla si hay poco contenido */
+    border-top: 0px solid var(--surface-0);
+    font-family: var(--fuente-principal);
+
+}
+
+.footer-contenedor {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.copyleft span {
+    display: inline-block;
+    transform: scaleX(-1);
+    /* Invierte el símbolo de copyright tradicional si no renderiza el nativo */
+}
+
+.footer-redes a {
+    color: var(--sapphire);
+    text-decoration: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.footer-redes a:hover {
+    color: var(--mauve);
+    text-decoration: underline;
+}
+
+
+
+/*
+Media Query es una función de CSS que permite aplicar estilos según el tamaño o características de la pantalla.
+Se usa para crear diseños responsivos (adaptables a celular, tablet y desktop).
+*/
+
+@media (max-width: 768px) {
+    /* ajustes para celular */
+
+    .caja {
+        width: 95vw;
+        /* Ocupa más espacio en móvil */
+        padding: 20px;
+        flex-direction: column;
+        /* Apila elementos internamente */
+        align-items: center;
+    }
+
+    .caja div {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    nav {
+        width: 95%;
+        padding-top: 10px;
+    }
+
+    nav::before {
+        width: 90%;
+        height: 4px;
+    }
+
+    nav ul {
+        flex-direction: column;
+        width: 100%;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    nav li {
+        width: 100%;
+        justify-content: center;
+    }
+
+    nav a {
+        text-align: center;
+        width: 100%;
+        padding: 12px 16px;
+    }
+
+    .footer-contenedor {
+        gap: 15px;
+    }
+
+    .footer-redes {
+        flex-direction: row;
+        /* Mantiene los enlaces en línea en móviles */
+        justify-content: center;
+    }
+}
+
+/* =========================================================
+   ESTILOS DE BARRAS DE PROGRESO (LAB 12)
+   ========================================================= */
+.progreso-container {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.progreso-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--fuente-principal);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--subtext-1);
+    margin-bottom: 8px;
+}
+
+.progreso-barra-fondo {
+    background-color: var(--surface-0);
+    border: 1px solid var(--surface-2);
+    border-radius: 8px;
+    height: 20px;
+    width: 100%;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progreso-barra-llena {
+    background-color: var(--green);
+    height: 100%;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(166, 209, 137, 0.4);
+}
+
+.progreso-container:hover .progreso-barra-llena {
+    filter: brightness(1.15);
+    box-shadow: 0 0 12px rgba(166, 209, 137, 0.6);
+}
+
+
+/* =========================================================
+   CLASES REFACTORIZADAS DE VISTAS (EVITANDO INLINE STYLES)
+   ========================================================= */
+.caja>p {
+    text-align: center;
+    width: 100%;
+}
+
+.perfil-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 15px;
+}
+
+.habilidades-lista {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.caja-resumen {
+    justify-content: space-around;
+    gap: 20px;
+}
+
+.tarjeta-resumen {
+    flex: 1;
+    min-width: 150px;
+    background-color: var(--crust);
+    border: 1px dashed var(--surface-2);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.tarjeta-resumen h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.tarjeta-resumen p {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--green);
+    margin: 0;
+    text-align: center;
+}
+
+.alerta-exito {
+    background-color: rgba(166, 209, 137, 0.15);
+    border: 2px dashed var(--green);
+    color: var(--green);
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: var(--fuente-principal);
+    font-size: 0.9rem;
+}
+
+.mensaje-error {
+    color: var(--red);
+    font-family: var(--fuente-principal);
+    margin-top: -10px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* === ADMIN PANEL STYLES === */
+.btn-small {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    font-family: var(--fuente-principal);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    border: none;
+    transition: background-color 0.2s, transform 0.1s;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-small:active {
+    transform: scale(0.95);
+}
+
+.btn-editar {
+    background-color: var(--sapphire);
+    color: var(--crust);
+}
+
+.btn-editar:hover {
+    background-color: var(--blue);
+}
+
+.btn-eliminar {
+    background-color: var(--red);
+    color: var(--crust);
+}
+
+.btn-eliminar:hover {
+    background-color: #f38ba8;
+}
+
+.btn-cancelar {
+    display: block;
+    text-decoration: none;
+    background-color: var(--surface-2);
+    color: var(--text);
+    margin-top: 10px;
+    width: 100%;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: var(--fuente-principal);
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.btn-cancelar:hover {
+    background-color: var(--surface-1);
+}
+
+.acciones-col {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.contenedor-tabla {
+    max-height: 250px;
+    overflow-y: auto;
+    background-color: var(--crust);
+    border-radius: 8px;
+    border: 3px dotted var(--surface-2);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    margin-top: 15px;
+}
+
+/* =========================================================
+   ESTILOS DE SUDOKU
+   ========================================================= */
+.contents {
+    display: contents;
+}
+
+.sudoku-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto;
+    width: 100%;
+}
+
+.sudoku-controles {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 15px;
+    margin-bottom: 25px;
+    width: 100%;
+    max-width: 500px;
+    background-color: var(--mantle);
+    padding: 20px;
+    border-radius: var(--radio-borde);
+    border: 1px solid var(--surface-0);
+    box-shadow: var(--sombra-suave);
+}
+
+.sudoku-controles div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.sudoku-controles label {
+    font-size: 0.9rem;
+    color: var(--subtext-1);
+}
+
+.sudoku-controles input[type="number"] {
+    width: 120px;
+    text-align: center;
+}
+
+.sudoku-grid {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    gap: 0;
+    border: 4px solid var(--surface-2); /* Borde exterior grueso temático */
+    width: max-content;
+    margin: 0 auto;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: var(--sombra-suave);
+}
+
+.sudoku-cell {
+    width: 3.2rem;
+    height: 3.2rem;
+    text-align: center;
+    font-size: 1.6rem;
+    border: 1px solid var(--surface-0); /* Borde fino por defecto */
+    outline: none;
+    font-family: var(--fuente-principal);
+    background-color: var(--crust);
+    color: var(--text);
+    transition: background-color 0.2s, color 0.2s;
+    /* Quitar flechas de input number */
+    -moz-appearance: textfield;
+}
+
+.sudoku-cell::-webkit-outer-spin-button,
+.sudoku-cell::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Bordes derechos gruesos cada 3 columnas (excepto la última) */
+.sudoku-cell:nth-child(3n):not(:nth-child(9n)) {
+    border-right: 3px solid var(--surface-2);
+}
+
+/* Bordes inferiores gruesos cada 3 filas (filas 3 y 6) */
+.row-3 .sudoku-cell, .row-6 .sudoku-cell {
+    border-bottom: 3px solid var(--surface-2);
+}
+
+/* Estilo para las pistas iniciales vs lo que escribe el usuario */
+.readonly-cell {
+    background-color: var(--surface-0);
+    color: var(--overlay-2);
+    font-weight: bold;
+}
+
+.sudoku-cell:not(.readonly-cell) {
+    background-color: var(--mantle);
+    color: var(--green);
+}
+
+.sudoku-cell:not(.readonly-cell):focus {
+    background-color: var(--surface-1);
+    color: var(--yellow);
+    box-shadow: inset 0 0 5px rgba(229, 200, 144, 0.2);
+}
+
+.sudoku-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+    width: 100%;
+}
+
+.btn-sudoku {
+    padding: 12px 28px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-family: var(--fuente-principal);
+    font-size: 1.1rem;
+    cursor: pointer;
+    border: none;
+    box-shadow: var(--sombra-suave);
+    transition: background-color 0.2s, transform 0.1s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-sudoku:active {
+    transform: scale(0.95);
+}
+
+.btn-resolver {
+    background-color: var(--green);
+    color: var(--crust);
+}
+
+.btn-resolver:hover {
+    background-color: #b8e29a;
+}
+
+.btn-nuevo {
+    background-color: var(--blue);
+    color: var(--crust);
+}
+
+.btn-nuevo:hover {
+    background-color: #9dbeff;
+}
+
+.btn-otra-vez {
+    background-color: var(--surface-2);
+    color: var(--text);
+}
+
+.btn-otra-vez:hover {
+    background-color: var(--surface-1);
+}
+
+.alerta-error {
+    background-color: rgba(231, 130, 132, 0.15);
+    border: 2px dashed var(--red);
+    color: var(--red);
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: var(--fuente-principal);
+    font-size: 0.9rem;
+}

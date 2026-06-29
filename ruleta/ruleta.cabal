@@ -1,0 +1,29 @@
+cabal-version:          3.0
+name:                   ruleta
+version:                0.1.0.0
+
+common wasm
+  if arch(wasm32)
+    ghc-options:
+      -no-hs-main -optl-mexec-model=reactor "-optl-Wl,--export=hs_start"
+    cpp-options:
+      -DWASM
+
+executable app
+  import:
+    wasm
+  hs-source-dirs:
+    src
+  main-is:
+    Main.hs
+  other-modules:
+    Ruleta
+  build-depends:
+    base, miso, mtl, containers
+  if arch(wasm32)
+    build-depends:
+      ghc-experimental
+  default-language:
+    GHC2021
+  default-extensions:
+    CPP TemplateHaskell

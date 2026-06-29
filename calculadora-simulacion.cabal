@@ -65,18 +65,25 @@ executable calculadora-simulacion
     -- Modules included in this executable, other than Main.
     other-modules: Funciones.Aleatorios,
                    Funciones.Estadisticas,
+                   Funciones.Distribuciones,
                    Automatas.CuadradosMedios,
                    Automatas.MultiplicadorConstante,
                    Automatas.Congruencial,
+                   Automatas.CongruencialMult,
                    Automatas.PruebasEstadisticas,
                    Automatas.ProductosMedios,
+                   Automatas.MersenneTwister,
                    SubAutomatas.InputValidado,
+                   SubAutomatas.AnalizadorEstadistico,
+                   SubAutomatas.Distribuciones,
+                   Funciones.Distribuciones,
                    UI.Navbar,
                    UI.Math,
                    UI.Table,
                    GlobalTypes,
                    GlobalUpdate,
-                   GlobalView
+                   GlobalView,
+                   Automatas.Ruleta
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -89,7 +96,14 @@ executable calculadora-simulacion
                       vector,
                       containers,
                       statistics,
-                      lens
+                      lens,
+                      diagrams-lib
+
+    if !arch(wasm32)
+        build-depends: diagrams-cairo
+
+    if arch(wasm32)
+        build-depends: ghc-experimental
 
     -- Directories containing source files.
     hs-source-dirs:   app
