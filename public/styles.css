@@ -650,13 +650,15 @@ td:nth-child(2), td:nth-child(3), td:nth-child(4) {
 
 /* Dashboard Test Card Styles */
 .card-pass {
-  background-color: #f0fdf4 !important;
-  border: 1px solid #bbf7d0 !important;
+  background-color: rgba(166, 209, 137, 0.08) !important;
+  border: 1px solid rgba(166, 209, 137, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(166, 209, 137, 0.04) !important;
 }
 
 .card-fail {
-  background-color: #fef2f2 !important;
-  border: 1px solid #fecaca !important;
+  background-color: rgba(231, 130, 132, 0.08) !important;
+  border: 1px solid rgba(231, 130, 132, 0.35) !important;
+  box-shadow: 0 4px 12px rgba(231, 130, 132, 0.04) !important;
 }
 
 .dashboard-stat-row {
@@ -690,11 +692,11 @@ td:nth-child(2), td:nth-child(3), td:nth-child(4) {
 }
 
 .verdict-pass {
-  color: #15803d;
+  color: var(--green, #a6d189);
 }
 
 .verdict-fail {
-  color: #b91c1c;
+  color: var(--red, #e78284);
 }
 
 /* Visual Dashboard Bars */
